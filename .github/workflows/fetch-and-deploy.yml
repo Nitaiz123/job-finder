@@ -102,9 +102,12 @@ jobs:
                   WHERE first_seen_at < datetime('now', '-60 days')
               """)
               print(f"Pruned {cur.rowcount} old rows from jobs.db")
-              conn.execute("VACUUM")
               conn.commit()
               conn.close()
+              # VACUUM must run outside any transaction (use a fresh connection)
+              conn2 = sqlite3.connect("jobs.db")
+              conn2.execute("VACUUM")
+              conn2.close()
           PY
 
       - name: Persist state to data branch
