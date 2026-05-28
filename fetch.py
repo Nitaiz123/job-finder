@@ -302,18 +302,30 @@ def write_csv(jobs):
     print(f"\nWrote {len(jobs)} jobs to {CSV_PATH}")
 
 
-def write_json(jobs):
+def write_json(new_jobs):
     """
-    Write the full job records (including full JD text) to JSON.
-    The dashboard reads this so the 'Copy JD' button has the full text.
-    Kept separate from CSV because full JDs are large and don't belong in a
-    spreadsheet-friendly export.
+    Merge new jobs with the existing accumulated jobs_latest.json so that
+    old jobs never disappear from the dashboard. Deduplication is done by
+    job_hash. New jobs are marked with is_new=True so the dashboard can
+    highlight them. Sorted newest-first.
     """
-    ordered = sorted(jobs, key=lambda x: (x.get("needs_sponsorship", 0),
-                                          _neg_time(x.get("posted_at", ""))))
-    records = []
-    for j in ordered:
-        records.append({
+    # Load existing accumulated records, keyed by job_hash.
+    existing: dict = {}
+    if JSON_PATH.exists():
+        try:
+            for rec in json.loads(JSON_PATH.read_text(encoding="utf-8")):
+                h = rec.get("job_hash", "")
+                if h:
+                    rec["is_new"] = False   # clear stale new-flag
+                    existing[h] = rec
+        except Exception:
+            pass  # corrupt file — start fresh
+
+    # Build records for the new jobs and merge.
+    now_iso = datetime.now(timezone.utc).isoformat()
+    for j in new_jobs:
+        h = j.get("job_hash", "")
+        rec = {
             "company": j.get("company", ""),
             "ats": j.get("ats", ""),
             "title": j.get("title", ""),
@@ -322,16 +334,30 @@ def write_json(jobs):
             "needs_sponsorship": j.get("needs_sponsorship", 0),
             "department": j.get("department", ""),
             "posted_at": j.get("posted_at", ""),
+            "first_seen_at": now_iso,
             "url": j.get("url", ""),
-            "job_hash": j.get("job_hash", ""),
+            "job_hash": h,
             "description_full": j.get("description_full", "") or j.get("description_snippet", ""),
             "exp_level": classify_exp_level(
                 j.get("title", ""),
                 j.get("description_full", "") or j.get("description_snippet", ""),
             ),
-        })
-    JSON_PATH.write_text(json.dumps(records, indent=2), encoding="utf-8")
-    print(f"Wrote {len(records)} full records to {JSON_PATH}")
+            "is_new": True,
+        }
+        existing[h] = rec
+
+    # Sort: newest first (by first_seen_at, then posted_at).
+    all_records = sorted(
+        existing.values(),
+        key=lambda x: (
+            x.get("needs_sponsorship", 0),
+            _neg_time(x.get("first_seen_at", "") or x.get("posted_at", "")),
+        ),
+    )
+
+    JSON_PATH.write_text(json.dumps(all_records, indent=2), encoding="utf-8")
+    print(f"Wrote {len(all_records)} accumulated records to {JSON_PATH} "
+          f"({len(new_jobs)} new this run)")
 
 
 def _neg_time(iso):

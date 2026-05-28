@@ -55,8 +55,8 @@ jobs:
             echo "Restoring state from 'data' branch..."
             git fetch origin data --depth=1
             git --work-tree=_state checkout origin/data -- \
-              companies.json jobs.db discovery_candidates.json 2>/dev/null || true
-            for f in companies.json jobs.db discovery_candidates.json; do
+              companies.json jobs.db discovery_candidates.json jobs_latest.json 2>/dev/null || true
+            for f in companies.json jobs.db discovery_candidates.json jobs_latest.json; do
               if [ -f "_state/$f" ]; then
                 cp "_state/$f" "./$f"
                 echo "  Restored $f ($(du -h "$f" | cut -f1))"
@@ -122,7 +122,7 @@ jobs:
           # This means the data branch has a flat one-commit history — no
           # multi-MB jobs.db diffs accumulating forever.
           STATE_DIR=$(mktemp -d)
-          for f in companies.json jobs.db discovery_candidates.json; do
+          for f in companies.json jobs.db discovery_candidates.json jobs_latest.json; do
             [ -f "$f" ] && cp "$f" "$STATE_DIR/"
           done
 

@@ -298,6 +298,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .exp-3-5       {{ background: #eef2f7; color: #44607d; }}
   .exp-5plus     {{ background: #faf0ed; color: #c8553d; }}
   .exp-unspecified {{ background: #f5f5f0; color: #6b6b6b; }}
+  .new-flag {{
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 10px;
+    border-radius: 3px;
+    background: #d4edda;
+    color: #155724;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+  }}
 </style>
 </head>
 <body>
@@ -419,6 +432,13 @@ function formatAge(iso) {{
   return Math.round(h / 24) + "d ago";
 }}
 
+function isNewJob(j) {{
+  // A job is "new" if it was first seen within the last 48 hours.
+  const iso = j.first_seen_at || j.posted_at;
+  const h = ageHours(iso);
+  return h !== null && h <= 48;
+}}
+
 function render() {{
   const search = document.getElementById("search").value.toLowerCase().trim();
   const ats = document.getElementById("atsFilter").value;
@@ -426,7 +446,7 @@ function render() {{
   const regionFilter = document.getElementById("regionFilter").value;
   const expFilter = document.getElementById("expFilter").value;
   const hideSponsor = document.getElementById("hideSponsor").checked;
-  const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;
+    const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;
 
   let filtered = JOBS.filter(j => {{
     if (ats && j.ats !== ats) return false;
@@ -436,7 +456,9 @@ function render() {{
     if (regionFilter && (j.region_label || "") !== regionFilter) return false;
     if (expFilter && (j.exp_level || "Unspecified") !== expFilter) return false;
     if (hideSponsor && String(j.needs_sponsorship) === "1") return false;
-    const h = ageHours(j.posted_at);
+    // Age filter uses first_seen_at (when we first discovered the job)
+    const seenIso = j.first_seen_at || j.posted_at;
+    const h = ageHours(seenIso);
     if (h !== null && h > maxAge) return false;
     return true;
   }});
@@ -468,6 +490,9 @@ function render() {{
       const h = ageHours(j.posted_at);
       const ageClass = (h !== null && h < 24) ? "age age-recent" : "age";
       const needsSponsor = String(j.needs_sponsorship) === "1";
+      const newFlag = isNewJob(j)
+        ? `<span class="new-flag">new</span>`
+        : "";
       if (needsSponsor) tr.className = "row-sponsor";
       const sponsorFlag = needsSponsor
         ? `<span class="sponsor-flag" title="Requires visa sponsorship — not covered by STEM OPT">visa</span>`
@@ -485,7 +510,7 @@ function render() {{
         "5+ years":  "exp-5plus",
       }}[expLevel] || "exp-unspecified";
       tr.innerHTML = `
-        <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a>${{sponsorFlag}}</td>
+        <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a>${{sponsorFlag}}${{newFlag}}</td>
         <td class="company">${{j.company}}</td>
         <td>${{j.location || "—"}}</td>
         <td><span class="region-badge">${{j.region_label || "—"}}</span></td>
