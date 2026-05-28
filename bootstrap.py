@@ -1,0 +1,662 @@
+"""
+Bootstrap companies.json from public sources.
+
+Pulls from Simplify's New-Grad-Positions and Summer-Internships GitHub repos
+(README.md files contain markdown tables with company names + application URLs).
+Extracts ATS slugs from the URLs.
+
+Also merges in a curated seed list of well-known tech companies on each ATS
+so the tool works even if the upstream repos change format.
+
+Run once, or weekly to refresh. Idempotent.
+"""
+
+import json
+import re
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
+
+from config import USER_AGENT, REQUEST_TIMEOUT
+
+OUT_PATH = Path(__file__).parent / "companies.json"
+
+SIMPLIFY_README_URLS = [
+    "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/master/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/master/README.md",
+]
+
+# Regex patterns for each ATS's canonical URL format
+ATS_PATTERNS = {
+    "greenhouse": [
+        re.compile(r"boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"job-boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"boards\.eu\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+    ],
+    "lever": [
+        re.compile(r"jobs\.lever\.co/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+    ],
+    "ashby": [
+        re.compile(r"jobs\.ashbyhq\.com/([a-z0-9][a-z0-9\-\.]*)", re.IGNORECASE),
+        re.compile(r"ashbyhq\.com/([a-z0-9][a-z0-9\-\.]*)", re.IGNORECASE),
+    ],
+    "workable": [
+        re.compile(r"apply\.workable\.com/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        # Second pattern: company.workable.com but NOT apply.workable.com
+        re.compile(r"(?<![a-z])(?!apply\.)([a-z0-9][a-z0-9\-]+)\.workable\.com", re.IGNORECASE),
+    ],
+    # Workday: captures (tenant, wdN, site) from URLs like:
+    #   https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/...
+    #   https://salesforce.wd1.myworkdayjobs.com/External_Career_Site/...
+    "workday": [
+        re.compile(
+            r"([a-z0-9][a-z0-9\-]*)\.(wd\d+)\.myworkdayjobs\.com/(?:[a-zA-Z\-_]+/)?([A-Za-z0-9_\-]+)",
+            re.IGNORECASE,
+        ),
+    ],
+    # Eightfold: captures company from URLs like https://capitalone.eightfold.ai/careers
+    "eightfold": [
+        re.compile(r"([a-z0-9][a-z0-9\-]*)\.eightfold\.ai", re.IGNORECASE),
+    ],
+    # iCIMS: careers-{slug}.icims.com or {slug}.icims.com. Capture the slug,
+    # normalizing the careers- prefix so we don't store both forms.
+    "icims": [
+        re.compile(r"careers-([a-z0-9][a-z0-9\-]*)\.icims\.com", re.IGNORECASE),
+        re.compile(r"(?<![a-z\-])([a-z0-9][a-z0-9\-]+)\.icims\.com", re.IGNORECASE),
+    ],
+}
+
+# Curated seed list of well-known tech companies on each ATS.
+# These are the slugs you'd use in the API URL (e.g. boards-api.greenhouse.io/v1/boards/<slug>/jobs).
+# Hand-collected from public career pages; safe to extend.
+CURATED_SEED = {
+    "greenhouse": [
+        "airbnb", "stripe", "doordash", "instacart", "robinhood", "coinbase", "discord",
+        "figma", "notion", "linear", "vercel", "openai", "anthropic", "scale", "rippling",
+        "ramp", "brex", "mercury", "plaid", "checkr", "cloudflare", "datadog", "elastic",
+        "mongodb", "hashicorp", "pagerduty", "twilio", "okta", "snyk", "auth0", "github",
+        "gitlab", "atlassian", "asana", "monday", "miro", "calendly", "intercom",
+        "zendesk", "freshworks", "samsara", "deel", "remote", "gusto", "carta", "wealthfront",
+        "betterment", "chime", "affirm", "klarna", "marqeta", "wise", "revolut",
+        "lyft", "uber", "instacart", "gopuff", "drizly", "blueapron", "wayfair",
+        "etsy", "shopify", "squarespace", "wix", "zapier", "loom", "frame", "pinterest",
+        "reddit", "medium", "substack", "patreon", "spotify", "soundcloud", "audible",
+        "duolingo", "khanacademy", "coursera", "udemy", "masterclass", "chegg",
+        "peloton", "wahoofitness", "mirror", "tonal", "whoop", "ouraring",
+        "warbyparker", "allbirds", "casper", "purple", "tuftandneedle",
+        "openai", "anthropic", "cohere", "huggingface", "weightsandbiases", "modal",
+        "replicate", "runway", "midjourney", "characterai", "perplexity", "you",
+        "snowflake", "databricks", "confluent", "starburst", "fivetran", "dbt",
+        "airbyte", "rudderstack", "segment", "amplitude", "mixpanel", "fullstory",
+        "heap", "rudder", "split", "launchdarkly", "statsig", "growthbook",
+        "vercel", "netlify", "render", "fly", "supabase", "neon", "planetscale",
+        "cockroachlabs", "yugabyte", "pinecone", "weaviate", "qdrant", "chroma",
+        "sourcegraph", "tabnine", "codeium", "cursor", "warp", "fig",
+        "retool", "appsmith", "airplane", "windmill", "n8n", "make",
+        "lattice", "culture-amp", "15five", "betterup", "modernhealth", "lyrahealth",
+        "headspace", "calm", "hims", "ro", "hers", "noom",
+        "doordash", "uber", "instacart", "shipt", "postmates", "grubhub",
+        "boltfinancial", "fastly", "imply", "rockset", "materialize", "tecton",
+        "iterable", "klaviyo", "mailgun", "sendgrid", "postmark", "courier",
+        "front", "missiveapp", "spike", "superhuman", "hey",
+        # EU / UK / Canada companies on Greenhouse
+        "wise", "monzo", "revolut", "gocardless", "checkout", "thoughtmachine",
+        "deliveroo", "wayve", "improbable", "darktrace", "graphcore",
+        "snyk", "elastic", "spotify", "klarna", "northvolt", "kry",
+        "tractable", "synthesia", "tessian", "cleo", "starlingbank",
+        "multiverse", "beamery", "onfido", "quantexa", "paddle",
+        "shopify", "wealthsimple", "clio", "1password", "faire", "ada",
+        "cohere", "benchsci", "wattpad", "hootsuite", "lightspeed",
+        " apryse", "ssense", "coveo", "dialpad", "vidyard",
+        "celonis", "personio", "contentful", "n26", "getyourguide",
+        "trade-republic", "pennylane", "qonto", "alan", "swile",
+        "datadog", "miro", "pigment", "payfit", "ledger", "sorare",
+        "back-market", "mirakl", "aircall", "spendesk", "contentsquare",
+    ],
+    "lever": [
+        "netflix", "spotify", "kpler", "ramp", "attentive", "blend", "carta", "checkr",
+        "clearbit", "color", "convoy", "cruise", "crunchbase", "discord", "doordash",
+        "figma", "gem", "gusto", "highspot", "humu", "imply", "instabase", "kustomer",
+        "lattice", "lever", "linktree", "modernhealth", "mux", "netlify", "nightfall",
+        "notion", "outschool", "patreon", "plaid", "podium", "postman", "ramp",
+        "ribbon", "scaleai", "shippo", "snyk", "tala", "tally", "thoughtworks",
+        "thumbtack", "tiger-analytics", "tinybird", "turing", "uipath", "udemy",
+        "verkada", "vouch", "warbyparker", "writer", "yotpo", "zipline", "zylo",
+        "anduril", "applied-intuition", "cresta", "elementl", "fathomvideo",
+        "fivetran", "glean", "groq", "huggingface", "humanloop", "mistralai",
+        "modal", "openphone", "patreon", "perplexity-ai", "pinecone", "predibase",
+        "replicate", "runway", "scale", "snorkelai", "together-ai", "weaviate",
+        "weightsandbiases", "wove", "writer",
+        # EU / UK / Canada on Lever
+        "spotify", "wealthsimple", "hopper", "ada-support", "cohere",
+        "faire", "dialpad", "vidyard", "thinkific", "trulioo",
+        "deliveroo", "starlingbank", "tide", "bulb", "depop",
+        "soundcloud", "babbel", "gympass", "wefox", "raisin",
+        "mambu", "solarisbank", "moonpig", "secret-escapes",
+    ],
+    "ashby": [
+        "ramp", "linear", "vercel", "deepgram", "openai", "anthropic", "scale",
+        "modal", "replicate", "supabase", "neon", "planetscale", "fly", "render",
+        "warp", "raycast", "arc", "tldraw", "cursor", "codeium", "tabnine",
+        "perplexity", "you", "harvey", "ironclad", "evenup", "casetext",
+        "watershed", "carbon-direct", "patch", "pachama", "stripe", "mercury",
+        "wise", "revolut", "monzo", "starlingbank", "n26",
+        "huggingface", "weights-biases", "modal-labs", "replicate-ai", "pinecone-io",
+        "weaviate", "qdrant", "chroma-core", "cohere", "mistral", "groq", "together",
+        "sambanova", "cerebras", "lambda", "coreweave", "runpod",
+        "linear-app", "raycast-app", "warp-terminal", "fig-io",
+        "anysphere", "sourcegraph", "supermaven", "augmentcode", "magic-dev",
+        "decagon", "sierra-ai", "pylon", "kustomer", "frontapp",
+        "rippling", "deel-com", "remote-com", "oysterhr", "remotebase",
+    ],
+    "workable": [
+        "doctolib", "klarna", "back-market", "alan", "swile",
+        "carwow", "trustpilot", "trainline", "babylonhealth", "babbel",
+        "n26", "trivago", "kry", "kahoot", "blablacar", "vinted",
+        "shopify-plus", "wolt", "bolt", "glovo", "deliveryhero",
+        "celonis", "personio", "miro", "contentful", "typeform",
+        "factorial", "spendesk", "qonto", "memorabledev",
+        # More EU/UK Workable tenants (Workable is heavily European)
+        "gymshark", "monzo", "starlingbank", "cleo", "tide", "curve",
+        "bulb", "ovo", "depop", "moonpig", "bloomandwild", "cazoo",
+        "secretescapes", "zego", "marshmallow", "habito", "primer",
+        "yapily", "truelayer", "form3", "modulr", "gocardless",
+        "freetrade", "moneybox", "wagestream", "lendable",
+        "mews", "messagebird", "bird", "framer", "channable", "bunq",
+        "adyen-careers", "mollie", "picnic", "catawiki", "wetransfer",
+        " wefox", "raisin", "solarisbank", "getyourguide", "omio",
+        "tier", "grover", "kontist", "pitch", "demodesk",
+        "pipedrive", "bolt-eu", "wise-careers",
+    ],
+    # Workday seeds are 'tenant|wdN|site' triples. Verified from public career pages.
+    # Add more as you discover them by visiting a company's "Careers" page and
+    # looking at the URL once it redirects to *.myworkdayjobs.com.
+    "workday": [
+        "nvidia|wd5|NVIDIAExternalCareerSite",
+        "salesforce|wd1|External_Career_Site",
+        "cisco|wd5|External",
+        "adobe|wd5|external_experienced",
+        "vmware|wd1|VMware",
+        "intuit|wd12|IntuitCareers",
+        "dell|wd1|External",
+        "hpe|wd5|Jobsathpe",
+        "hp|wd12|ExternalCareerSite",
+        "ibm|wd1|IBM",
+        "vmware|wd1|VMware_Careers",
+        "workday|wd5|Workday",
+        "paloaltonetworks|wd1|PaloAltoNetworks",
+        "servicenow|wd1|ServiceNow",
+        "splunk|wd1|splunk_careers",
+        "boozallen|wd1|BAH_Careers_External",
+        "accenture|wd103|AccentureCareers",
+        "kpmg|wd5|KPMG_Careers",
+        "deloitte|wd1|Deloitte_Careers",
+        "ey|wd5|EYCareers",
+        "pwc|wd3|Global_Experienced_Careers",
+        "jpmorganchase|wd5|jpmc",
+        "bankofamerica|wd1|Lateral-US",
+        "wellsfargo|wd1|Wellsfargojobs",
+        "capitalone|wd12|Capital_One",
+        "americanexpress|wd1|jobs",
+        "citi|wd5|2",
+        "morganstanley|wd5|External",
+        "goldmansachs|wd103|Apply",
+        "visa|wd1|Visa_Careers",
+        "mastercard|wd5|CorporateCareers",
+        "paypal|wd1|jobs",
+        "intuit|wd12|External",
+        "walmart|wd5|WalmartExternal",
+        "target|wd5|targetcareers",
+        "costco|wd5|costcocareers",
+        "homedepot|wd1|homedepot",
+        "lowes|wd1|Lowes",
+        "fedex|wd1|FXE",
+        "ups|wd5|UPSJobs",
+        "att|wd1|ATTEXTERNAL",
+        "verizon|wd12|verizon",
+        "tmobile|wd1|External",
+        "comcast|wd5|Comcast_Careers",
+        "disney|wd5|disneycareer",
+        "warnerbros|wd5|global",
+        "paramount|wd5|Paramount",
+        "nbcuni|wd1|nbcunicareers",
+        "ge|wd5|GE_ExternalSite",
+        "boeing|wd1|EXTERNAL_CAREERS",
+        "lockheedmartin|wd1|LMCareers",
+        "raytheon|wd1|REC_RTX_ExtCareers",
+        "northropgrumman|wd5|NGCareers",
+        "honeywell|wd1|HONEYWELL",
+        "3m|wd1|Search",
+        "caterpillar|wd5|CaterpillarCareers",
+        "johndeere|wd5|JohnDeere",
+        "pepsico|wd3|PepsiCoJobs",
+        "cocacolacompany|wd1|coca-cola-careers",
+        "kraftheinz|wd1|KraftHeinzCareers",
+        "kelloggs|wd1|kellogg",
+        "generalmills|wd5|generalmills",
+        "abbott|wd5|abbottcareers",
+        "abbvie|wd1|abbviecareers",
+        "pfizer|wd1|PfizerCareers",
+        "merck|wd5|External",
+        "lilly|wd5|LLY",
+        "jnj|wd5|jnjcareers",
+        "novartis|wd3|Novartis_Careers",
+        "roche|wd3|roche-ext",
+        "regeneron|wd1|Regeneron_External",
+        "moderna|wd5|M_tx",
+        "biogen|wd5|Biogen_Careers",
+        "amgen|wd1|Amgen",
+        "gilead|wd5|GileadCareers",
+        "unitedhealthgroup|wd5|UHG",
+        "anthem|wd5|ANTHEMCAREERS",
+        "cvshealth|wd5|cvs_health_careers",
+        "humana|wd1|Humana_External_Career_Site",
+        "kp|wd5|kaiser",
+        "exxonmobil|wd5|ExxonMobil",
+        "chevron|wd5|jobs",
+        "bp|wd3|bpcareers",
+        "shell|wd3|shellcareers",
+        "ford|wd1|FordCareers",
+        "gm|wd5|gmcareers",
+        "stellantis|wd1|Stellantis_Careers",
+        "tesla|wd12|tesla",  # Note: Tesla uses its own ATS mostly, but some Workday too
+        "rivian|wd1|Rivian",
+        "lucidmotors|wd1|Lucid_Careers",
+        "uber|wd1|UberInternal",  # Uber primarily Greenhouse, some Workday for non-eng
+        "lyft|wd5|lyft",
+    ],
+    # Eightfold seeds: just the company subdomain
+    "eightfold": [
+        "capitalone",
+        "bloomberg",
+        "booking",
+        "cisco",
+        "vodafone",
+        "tatadigital",
+        "vmware",
+        "wayfair",
+        "h-d",  # Harley Davidson
+        "ge",
+        "exxonmobil",
+        "chevron",
+        "att",
+        "verizon",
+        "comcast",
+        "netflix",  # uses Eightfold for some roles
+        "ge-healthcare",
+        "lvmh",
+        "ralphlauren",
+        "macys",
+        "kohls",
+        "nordstrom",
+        "gap",
+        "limited-brands",
+        "tjx",
+        "ross-stores",
+        "burlington",
+        "fivebelow",
+        "dollargeneral",
+        "dollartree",
+        "tracfone",
+        "tcs",  # Tata Consultancy
+        "infosys",
+        "wipro",
+        "hcl",
+        "techmahindra",
+        "ltimindtree",
+        "mphasis",
+        "persistent",
+        "happiestminds",
+        "zensar",
+        "coforge",
+    ],
+    # iCIMS seeds: the tenant slug used in careers-{slug}.icims.com.
+    # iCIMS skews toward large enterprise / retail / healthcare / finance.
+    # These are best-effort — some tenants JS-gate search and will return
+    # nothing (that's fine, the run continues). Verify/extend by visiting a
+    # company's careers page and checking for an *.icims.com URL.
+    "icims": [
+        "compass",            # Compass Group
+        "sodexo",
+        "aramark",
+        "marriott",
+        "hilton",
+        "hyatt",
+        "wyndham",
+        "choicehotels",
+        "panerabread",
+        "chipotle",
+        "dominos",
+        "wendys",
+        "dunkinbrands",
+        "darden",             # Olive Garden etc.
+        "bloominbrands",
+        "ulta",
+        "sephora",
+        "petco",
+        "petsmart",
+        "tractorsupply",
+        "academy",            # Academy Sports
+        "dickssportinggoods",
+        "kohls",
+        "belk",
+        "bjs",                # BJ's Wholesale
+        "wegmans",
+        "publix",
+        "albertsons",
+        "aldi",
+        "sprouts",
+        "ahold",              # Ahold Delhaize USA
+        "raleys",
+        "hyvee",
+        "molsoncoors",
+        "constellationbrands",
+        "keurigdrpepper",
+        "tysonfoods",
+        "smithfield",
+        "perduefarms",
+        "landolakes",
+        "dole",
+        "delmonte",
+        "conagra",
+        "campbells",
+        "mccormick",
+        "hersheys",
+        "mars",
+        "ferrero",
+        "nestleusa",
+        "danone",
+        "kraftheinz",
+        "kelloggcompany",
+        "generalmillscareers",
+        "schwans",
+        "hormel",
+        "jbsfoods",
+        "cargill",
+        "adm",                # Archer Daniels Midland
+        "bunge",
+        "dow",
+        "dupont",
+        "ppg",
+        "sherwin",            # Sherwin-Williams
+        "axalta",
+        "huntsman",
+        "celanese",
+        "eastman",
+        "lyondellbasell",
+        "westlake",
+        "olin",
+        "ecolab",
+        "internationalpaper",
+        "westrock",
+        "smurfitwestrock",
+        "packagingcorp",
+        "sonoco",
+        "sealedair",
+        "averydennison",
+        "owenscorning",
+        "masonite",
+        "fortunebrands",
+        "mohawkindustries",
+        "shawindustries",
+        "armstrongflooring",
+        "whirlpool",
+        "electrolux",
+        "geappliances",
+        "trane",
+        "carrier",
+        "lennox",
+        "rheem",
+        "watsco",
+        "ferguson",
+        "wesco",
+        "wwgrainger",         # W.W. Grainger
+        "fastenal",
+        "msc",                # MSC Industrial
+        "appliedindustrial",
+        "motion",             # Motion Industries
+        "dxpenterprises",
+        "univar",
+        "brenntag",
+        "sigmaaldrich",
+        "thermofisher",
+        "danaher",
+        "becton",             # Becton Dickinson
+        "stryker",
+        "bostonscientific",
+        "medtronic",
+        "abbott",
+        "baxter",
+        "edwards",            # Edwards Lifesciences
+        "zimmerbiomet",
+        "hologic",
+        "intuitive",          # Intuitive Surgical
+        "resmed",
+        "dexcom",
+        "cooper",             # Cooper Companies
+        "henryschein",
+        "pattersondental",
+        "mckesson",
+        "cardinalhealth",
+        "cencora",            # formerly AmerisourceBergen
+        "labcorp",
+        "questdiagnostics",
+        "davita",
+        "fresenius",
+        "encompass",          # Encompass Health
+        "tenethealth",
+        "hcahealthcare",
+        "commonspirit",
+        "ascension",
+        "trinity",            # Trinity Health
+        "providence",
+        "sutterhealth",
+        "bannerhealth",
+        "intermountain",
+        "geisinger",
+        "northwell",
+        "montefiore",
+        "uhsinc",             # Universal Health Services
+        "molinahealthcare",
+        "centene",
+        "elevancehealth",
+        "cigna",
+        "humana",
+        "aetna",
+        "metlife",
+        "prudential",
+        "massmutual",
+        "newyorklife",
+        "northwesternmutual",
+        "guardian",
+        "transamerica",
+        "principal",
+        "lincolnfinancial",
+        "voya",
+        "ameriprise",
+        "raymondjames",
+        "lpl",                # LPL Financial
+        "edwardjones",
+        "fidelity",
+        "tdameritrade",
+        "schwab",
+        "statestreet",
+        "bnymellon",
+        "northerntrust",
+        "pnc",
+        "usbank",
+        "truist",
+        "regions",
+        "fifththird",
+        "keybank",
+        "huntington",
+        "citizensbank",
+        "mtb",                # M&T Bank
+        "comerica",
+        "zions",
+        "firsthorizon",
+        "synovus",
+        "discover",
+        "synchrony",
+        "allyfinancial",
+        "navyfederal",
+        "usaa",
+        "creditacceptance",
+        "santanderus",
+    ],
+    # CareerPuck: modern ATS with a clean public JSON API. Confirmed users
+    # include Earnest and Lyft. The full company list is enumerable from
+    # CareerPuck's public sitemap — discovery.py harvests it automatically,
+    # so this seed is just a starting point.
+    "careerpuck": [
+        "earnest",
+        "lyft",
+    ],
+}
+
+
+def fetch_text(url):
+    try:
+        r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT)
+        if r.status_code == 200:
+            return r.text
+    except requests.RequestException as e:
+        print(f"  ! Failed to fetch {url}: {e}")
+    return None
+
+
+def extract_slugs_from_text(text):
+    """Extract ATS slugs from any text containing application URLs."""
+    found = {ats: set() for ats in ATS_PATTERNS}
+    for ats, patterns in ATS_PATTERNS.items():
+        for pattern in patterns:
+            for match in pattern.findall(text):
+                # Multi-group patterns (Workday) return a tuple; join with '|'
+                if isinstance(match, tuple):
+                    # Skip if any group is empty
+                    if not all(g.strip() for g in match):
+                        continue
+                    slug = "|".join(g.lower().strip() for g in match)
+                else:
+                    slug = match.lower().strip().strip("-.")
+                # iCIMS: collapse the careers- prefix so careers-marriott and
+                # marriott don't both get stored. The fetcher tries both forms.
+                if ats == "icims" and slug.startswith("careers-"):
+                    slug = slug[len("careers-"):]
+                if slug and len(slug) > 1 and not slug.startswith("www"):
+                    found[ats].add(slug)
+    return found
+
+
+def follow_redirect_to_ats(url, max_redirects=3):
+    """Some Simplify links go through redirector domains. Follow them."""
+    try:
+        r = requests.head(url, headers={"User-Agent": USER_AGENT},
+                         timeout=REQUEST_TIMEOUT, allow_redirects=True)
+        return r.url
+    except requests.RequestException:
+        return None
+
+
+def bootstrap():
+    print("Bootstrapping company list...\n")
+    # Include every ATS we have a seed for OR a URL pattern for. CareerPuck is
+    # sitemap-driven (no URL-in-text pattern), so it only appears via the seed.
+    all_ats_keys = set(ATS_PATTERNS.keys()) | set(CURATED_SEED.keys())
+    all_found = {ats: set() for ats in all_ats_keys}
+
+    # Step 1: seed from curated list
+    print("Step 1: Loading curated seed list...")
+    for ats, slugs in CURATED_SEED.items():
+        all_found[ats].update(s.lower() for s in slugs)
+        print(f"  {ats}: {len(slugs)} curated slugs")
+
+    # Step 2: pull Simplify READMEs
+    print("\nStep 2: Crawling Simplify GitHub repos...")
+    seen_readmes = set()
+    for url in SIMPLIFY_README_URLS:
+        if url in seen_readmes:
+            continue
+        seen_readmes.add(url)
+        print(f"  Fetching {url}")
+        text = fetch_text(url)
+        if not text:
+            continue
+        found = extract_slugs_from_text(text)
+        for ats, slugs in found.items():
+            new_slugs = slugs - all_found[ats]
+            all_found[ats].update(slugs)
+            if new_slugs:
+                print(f"    + {len(new_slugs)} new {ats} slugs")
+        time.sleep(0.5)
+
+    # Step 2.5: harvest the CareerPuck sitemap (enumerates all its tenants).
+    print("\nStep 2.5: Harvesting CareerPuck sitemap...")
+    cp_text = fetch_text("https://app.careerpuck.com/sitemap.xml")
+    if cp_text:
+        cp_pattern = re.compile(
+            r"https://app\.careerpuck\.com/job-board/([a-z0-9][a-z0-9\-]*)",
+            re.IGNORECASE)
+        cp_slugs = {m.lower().strip().strip("-.") for m in cp_pattern.findall(cp_text)}
+        cp_slugs = {s for s in cp_slugs if len(s) > 1}
+        new_cp = cp_slugs - all_found["careerpuck"]
+        all_found["careerpuck"].update(cp_slugs)
+        print(f"  Found {len(cp_slugs)} CareerPuck boards ({len(new_cp)} new)")
+    else:
+        print("  (sitemap unreachable — using curated seed only)")
+
+    # Step 3: write companies.json (v2 schema), merging with any existing file
+    # so we never clobber discovered companies or their health metadata.
+    now = datetime.now(timezone.utc).isoformat()
+
+    existing = {}
+    if OUT_PATH.exists():
+        try:
+            for e in json.loads(OUT_PATH.read_text()):
+                existing[(e["ats"], e["slug"])] = e
+        except (json.JSONDecodeError, KeyError):
+            existing = {}
+
+    companies = []
+    seen_keys = set()
+    for ats in sorted(all_found.keys()):
+        for slug in sorted(all_found[ats]):
+            key = (ats, slug)
+            seen_keys.add(key)
+            if key in existing:
+                # Keep existing metadata (source, health), it's already known.
+                companies.append(existing[key])
+            else:
+                companies.append({
+                    "slug": slug,
+                    "ats": ats,
+                    "source": "curated",
+                    "added_at": now,
+                    "last_validated_at": None,
+                    "miss_streak": 0,
+                    "last_job_count": None,
+                })
+
+    # Preserve any previously-discovered companies not in the seed lists.
+    for key, e in existing.items():
+        if key not in seen_keys:
+            companies.append(e)
+
+    OUT_PATH.write_text(json.dumps(companies, indent=2))
+    print(f"\nWrote {len(companies)} companies to {OUT_PATH}")
+    for ats in sorted(all_found.keys()):
+        print(f"  {ats}: {len(all_found[ats])}")
+    discovered = sum(1 for c in companies if c.get("source") == "discovered")
+    if discovered:
+        print(f"  (preserved {discovered} previously-discovered companies)")
+
+
+if __name__ == "__main__":
+    bootstrap()

@@ -1,0 +1,19 @@
+# State files — persisted to 'data' branch, never to main.
+jobs.db
+jobs_latest.csv
+jobs_latest.json
+dashboard.html
+companies.json
+discovery_candidates.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Editors
+.vscode/
+.idea/
+.DS_Store

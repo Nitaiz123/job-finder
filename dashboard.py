@@ -1,0 +1,618 @@
+"""
+Generate a self-contained dashboard.html from jobs_latest.csv.
+Embeds job data as JSON, provides client-side filter and sort.
+"""
+
+import csv
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+CSV_PATH = ROOT / "jobs_latest.csv"
+JSON_PATH = ROOT / "jobs_latest.json"
+HTML_PATH = ROOT / "dashboard.html"
+
+
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fresh SWE Jobs — {generated_at}</title>
+<style>
+  :root {{
+    --bg: #fafaf7;
+    --panel: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #e5e5e0;
+    --accent: #c8553d;
+    --accent-bg: #faf0ed;
+    --hover: #f5f5f0;
+  }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.5;
+  }}
+  header {{
+    max-width: 1200px;
+    margin: 0 auto 24px;
+  }}
+  h1 {{
+    font-size: 28px;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }}
+  .meta {{
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }}
+  .controls {{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 150px 150px 150px 120px;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 12px;
+  }}
+  .control label {{
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }}
+  .control input, .control select {{
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg);
+    font-family: inherit;
+  }}
+  .control input:focus, .control select:focus {{
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+  }}
+  .count {{
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }}
+  .count strong {{ color: var(--ink); }}
+  .container {{
+    max-width: 1200px;
+    margin: 0 auto;
+  }}
+  table {{
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+  }}
+  th {{
+    text-align: left;
+    padding: 12px 14px;
+    background: #f5f5f0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }}
+  th:hover {{ color: var(--ink); }}
+  th.sorted-asc::after {{ content: " \\2191"; color: var(--accent); }}
+  th.sorted-desc::after {{ content: " \\2193"; color: var(--accent); }}
+  td {{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    vertical-align: top;
+  }}
+  tr:last-child td {{ border-bottom: none; }}
+  tr:hover td {{ background: var(--hover); }}
+  .title-link {{
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }}
+  .title-link:hover {{ text-decoration: underline; }}
+  .ats-badge {{
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }}
+  .company {{
+    font-weight: 500;
+    text-transform: capitalize;
+  }}
+  .empty {{
+    padding: 60px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }}
+  .age {{ font-size: 13px; color: var(--muted); }}
+  .age-recent {{ color: #2d8659; font-weight: 500; }}
+  .region-badge {{
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    background: #eef2f7;
+    color: #44607d;
+    font-weight: 500;
+    white-space: nowrap;
+  }}
+  .sponsor-flag {{
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 10px;
+    border-radius: 3px;
+    background: #fdf0e3;
+    color: #b6712a;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+  }}
+  .toggle-row {{
+    max-width: 1200px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--muted);
+  }}
+  .toggle-row input {{ width: auto; margin: 0; }}
+  .toggle-row label {{ cursor: pointer; user-select: none; }}
+  tr.row-sponsor td {{ background: #fdfbf7; }}
+  tr.row-sponsor:hover td {{ background: #faf6ee; }}
+  .actions {{ white-space: nowrap; }}
+  .btn {{
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    margin-right: 4px;
+  }}
+  .btn:hover {{ border-color: var(--accent); color: var(--accent); }}
+  .btn-copied {{ background: #e8f5ee; border-color: #2d8659; color: #2d8659; }}
+  .modal-overlay {{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }}
+  .modal-overlay.open {{ display: flex; }}
+  .modal {{
+    background: var(--panel);
+    border-radius: 10px;
+    max-width: 760px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }}
+  .modal-head {{
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }}
+  .modal-head h2 {{ margin: 0; font-size: 18px; }}
+  .modal-head .sub {{ font-size: 13px; color: var(--muted); margin-top: 4px; }}
+  .modal-body {{
+    padding: 22px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2a2a2a;
+  }}
+  .modal-foot {{
+    padding: 14px 22px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }}
+  .modal-close {{
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--muted);
+  }}
+  .modal-close:hover {{ color: var(--ink); }}
+  .toast {{
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 200;
+  }}
+  .toast.show {{ opacity: 1; }}
+</style>
+</head>
+<body>
+<header class="container">
+  <h1>Fresh SWE Jobs</h1>
+  <div class="meta">Generated {generated_at} &middot; {total_count} new postings &middot; Greenhouse + Lever + Ashby + Workable + Workday + Eightfold + iCIMS + CareerPuck</div>
+  <div class="controls">
+    <div class="control">
+      <label>Search title or company</label>
+      <input type="text" id="search" placeholder="e.g. backend, stripe, platform">
+    </div>
+    <div class="control">
+      <label>ATS</label>
+      <select id="atsFilter">
+        <option value="">All</option>
+        <option value="greenhouse">Greenhouse</option>
+        <option value="lever">Lever</option>
+        <option value="ashby">Ashby</option>
+        <option value="workable">Workable</option>
+        <option value="workday">Workday</option>
+        <option value="eightfold">Eightfold</option>
+        <option value="icims">iCIMS</option>
+        <option value="careerpuck">CareerPuck</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>Location contains</label>
+      <input type="text" id="locFilter" placeholder="e.g. remote, dallas">
+    </div>
+    <div class="control">
+      <label>Region</label>
+      <select id="regionFilter">
+        <option value="">All regions</option>
+        <option value="United States">United States</option>
+        <option value="Remote (US)">Remote (US)</option>
+        <option value="Remote (unspecified)">Remote (unspecified)</option>
+        <option value="Canada">Canada</option>
+        <option value="United Kingdom">United Kingdom</option>
+        <option value="Europe (EU)">Europe (EU)</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>Max age (hours)</label>
+      <input type="number" id="ageFilter" value="48" min="1" max="720">
+    </div>
+  </div>
+</header>
+<div class="toggle-row">
+  <input type="checkbox" id="hideSponsor">
+  <label for="hideSponsor">Hide roles needing visa sponsorship (EU / UK / Canada) — you're on STEM OPT</label>
+</div>
+<div class="count">Showing <strong id="visibleCount">0</strong> of <strong>{total_count}</strong> jobs</div>
+<div class="container">
+  <table id="jobsTable">
+    <thead>
+      <tr>
+        <th data-sort="title">Title</th>
+        <th data-sort="company">Company</th>
+        <th data-sort="location">Location</th>
+        <th data-sort="region_label">Region</th>
+        <th data-sort="ats">ATS</th>
+        <th data-sort="posted_at">Posted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="jobsBody"></tbody>
+  </table>
+  <div id="empty" class="empty" style="display:none">No jobs match your filters.</div>
+</div>
+
+<div class="modal-overlay" id="jdModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle"></h2>
+        <div class="sub" id="modalSub"></div>
+      </div>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" id="modalCopy">Copy JD</button>
+      <a class="btn" id="modalOpen" href="#" target="_blank" rel="noopener">Open listing &rarr;</a>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const JOBS = {jobs_json};
+const NOW = new Date();
+
+let sortKey = "posted_at";
+let sortDir = "desc";
+
+function ageHours(iso) {{
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return (NOW - d) / 36e5;
+}}
+
+function formatAge(iso) {{
+  const h = ageHours(iso);
+  if (h === null) return "—";
+  if (h < 1) return Math.round(h * 60) + "m ago";
+  if (h < 24) return Math.round(h) + "h ago";
+  return Math.round(h / 24) + "d ago";
+}}
+
+function render() {{
+  const search = document.getElementById("search").value.toLowerCase().trim();
+  const ats = document.getElementById("atsFilter").value;
+  const locFilter = document.getElementById("locFilter").value.toLowerCase().trim();
+  const regionFilter = document.getElementById("regionFilter").value;
+  const hideSponsor = document.getElementById("hideSponsor").checked;
+  const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;
+
+  let filtered = JOBS.filter(j => {{
+    if (ats && j.ats !== ats) return false;
+    if (search && !(j.title.toLowerCase().includes(search) ||
+                    j.company.toLowerCase().includes(search))) return false;
+    if (locFilter && !(j.location || "").toLowerCase().includes(locFilter)) return false;
+    if (regionFilter && (j.region_label || "") !== regionFilter) return false;
+    if (hideSponsor && String(j.needs_sponsorship) === "1") return false;
+    const h = ageHours(j.posted_at);
+    if (h !== null && h > maxAge) return false;
+    return true;
+  }});
+
+  filtered.sort((a, b) => {{
+    let va = (a[sortKey] || "").toString().toLowerCase();
+    let vb = (b[sortKey] || "").toString().toLowerCase();
+    if (sortKey === "posted_at") {{
+      va = new Date(a.posted_at).getTime() || 0;
+      vb = new Date(b.posted_at).getTime() || 0;
+    }}
+    if (va < vb) return sortDir === "asc" ? -1 : 1;
+    if (va > vb) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  }});
+
+  const body = document.getElementById("jobsBody");
+  const empty = document.getElementById("empty");
+  body.innerHTML = "";
+
+  if (filtered.length === 0) {{
+    empty.style.display = "block";
+    document.getElementById("jobsTable").style.display = "none";
+  }} else {{
+    empty.style.display = "none";
+    document.getElementById("jobsTable").style.display = "";
+    for (const j of filtered) {{
+      const tr = document.createElement("tr");
+      const h = ageHours(j.posted_at);
+      const ageClass = (h !== null && h < 24) ? "age age-recent" : "age";
+      const needsSponsor = String(j.needs_sponsorship) === "1";
+      if (needsSponsor) tr.className = "row-sponsor";
+      const sponsorFlag = needsSponsor
+        ? `<span class="sponsor-flag" title="Requires visa sponsorship — not covered by STEM OPT">visa</span>`
+        : "";
+      const hasJD = j.description_full && j.description_full.trim().length > 0;
+      const idx = JOBS.indexOf(j);
+      const actions = hasJD
+        ? `<button class="btn btn-copy" data-idx="${{idx}}">Copy JD</button>` +
+          `<button class="btn btn-view" data-idx="${{idx}}">View</button>`
+        : `<span class="age">no JD</span>`;
+      tr.innerHTML = `
+        <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a>${{sponsorFlag}}</td>
+        <td class="company">${{j.company}}</td>
+        <td>${{j.location || "—"}}</td>
+        <td><span class="region-badge">${{j.region_label || "—"}}</span></td>
+        <td><span class="ats-badge">${{j.ats}}</span></td>
+        <td class="${{ageClass}}">${{formatAge(j.posted_at)}}</td>
+        <td class="actions">${{actions}}</td>
+      `;
+      body.appendChild(tr);
+    }}
+  }}
+
+  document.getElementById("visibleCount").textContent = filtered.length;
+
+  document.querySelectorAll("th[data-sort]").forEach(th => {{
+    th.classList.remove("sorted-asc", "sorted-desc");
+    if (th.dataset.sort === sortKey) {{
+      th.classList.add(sortDir === "asc" ? "sorted-asc" : "sorted-desc");
+    }}
+  }});
+}}
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("atsFilter").addEventListener("change", render);
+document.getElementById("locFilter").addEventListener("input", render);
+document.getElementById("regionFilter").addEventListener("change", render);
+document.getElementById("hideSponsor").addEventListener("change", render);
+document.getElementById("ageFilter").addEventListener("input", render);
+
+document.querySelectorAll("th[data-sort]").forEach(th => {{
+  th.addEventListener("click", () => {{
+    const k = th.dataset.sort;
+    if (sortKey === k) {{
+      sortDir = sortDir === "asc" ? "desc" : "asc";
+    }} else {{
+      sortKey = k;
+      sortDir = k === "posted_at" ? "desc" : "asc";
+    }}
+    render();
+  }});
+}});
+
+// ---- Clipboard helper (works on file:// via textarea fallback) ----
+function copyText(text) {{
+  if (navigator.clipboard && window.isSecureContext) {{
+    return navigator.clipboard.writeText(text);
+  }}
+  return new Promise((resolve, reject) => {{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {{
+      document.execCommand("copy");
+      resolve();
+    }} catch (e) {{
+      reject(e);
+    }} finally {{
+      document.body.removeChild(ta);
+    }}
+  }});
+}}
+
+let toastTimer = null;
+function showToast(msg) {{
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}}
+
+function jdText(job) {{
+  // Prepend a small header so the pasted JD has context.
+  const header = `${{job.title}} — ${{job.company}} (${{job.location || "n/a"}})\\n${{job.url}}\\n\\n`;
+  return header + (job.description_full || "");
+}}
+
+// ---- Event delegation for Copy / View buttons ----
+let currentModalJob = null;
+
+document.getElementById("jobsBody").addEventListener("click", (e) => {{
+  const copyBtn = e.target.closest(".btn-copy");
+  const viewBtn = e.target.closest(".btn-view");
+  if (copyBtn) {{
+    const job = JOBS[parseInt(copyBtn.dataset.idx, 10)];
+    copyText(jdText(job)).then(() => {{
+      copyBtn.textContent = "Copied!";
+      copyBtn.classList.add("btn-copied");
+      showToast("Job description copied to clipboard");
+      setTimeout(() => {{
+        copyBtn.textContent = "Copy JD";
+        copyBtn.classList.remove("btn-copied");
+      }}, 1500);
+    }}).catch(() => showToast("Copy failed — try the View button"));
+  }} else if (viewBtn) {{
+    const job = JOBS[parseInt(viewBtn.dataset.idx, 10)];
+    openModal(job);
+  }}
+}});
+
+function openModal(job) {{
+  currentModalJob = job;
+  document.getElementById("modalTitle").textContent = job.title;
+  document.getElementById("modalSub").textContent =
+    `${{job.company}} · ${{job.location || "n/a"}} · ${{job.region_label || ""}}`;
+  document.getElementById("modalBody").textContent = job.description_full || "(No description available)";
+  document.getElementById("modalOpen").href = job.url || "#";
+  document.getElementById("jdModal").classList.add("open");
+}}
+
+function closeModal() {{
+  document.getElementById("jdModal").classList.remove("open");
+  currentModalJob = null;
+}}
+
+document.getElementById("modalClose").addEventListener("click", closeModal);
+document.getElementById("jdModal").addEventListener("click", (e) => {{
+  if (e.target.id === "jdModal") closeModal();
+}});
+document.addEventListener("keydown", (e) => {{
+  if (e.key === "Escape") closeModal();
+}});
+document.getElementById("modalCopy").addEventListener("click", () => {{
+  if (!currentModalJob) return;
+  copyText(jdText(currentModalJob)).then(() => showToast("Job description copied to clipboard"));
+}});
+
+render();
+</script>
+</body>
+</html>
+"""
+
+
+def build_dashboard():
+    # Prefer the JSON export (has full JD text for the Copy button).
+    # Fall back to CSV if JSON isn't present (older runs).
+    jobs = []
+    if JSON_PATH.exists():
+        jobs = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+    elif CSV_PATH.exists():
+        with open(CSV_PATH, encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                jobs.append(row)
+    else:
+        print("ERROR: no jobs_latest.json or jobs_latest.csv found. Run fetch.py first.")
+        return
+
+    html = HTML_TEMPLATE.format(
+        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        total_count=len(jobs),
+        jobs_json=json.dumps(jobs),
+    )
+    HTML_PATH.write_text(html, encoding="utf-8")
+    print(f"Wrote dashboard to {HTML_PATH}")
+
+
+if __name__ == "__main__":
+    build_dashboard()

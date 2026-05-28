@@ -1,0 +1,172 @@
+name: Fetch jobs & deploy dashboard
+
+on:
+  # Every 2 hours from 12:00 UTC to 02:00 UTC (next day) = 7am-9pm CDT.
+  # Dallas is UTC-5 in CDT (Mar-Nov) and UTC-6 in CST (Nov-Mar).
+  # In CST the local hours shift to 6am-8pm — close enough; we don't
+  # change the schedule twice a year.
+  schedule:
+    - cron: '0 12,14,16,18,20,22 * * *'   # 7am, 9am, 11am, 1pm, 3pm, 5pm CDT
+    - cron: '0 0,2 * * *'                  # 7pm, 9pm CDT (next-day UTC)
+  # Allow manual trigger for testing / forcing a refresh.
+  workflow_dispatch:
+  # Run automatically on a push to main, so code changes immediately produce
+  # a fresh dashboard rather than waiting for the next scheduled tick.
+  push:
+    branches: [main]
+    # Don't loop on workflow's own commits (it commits to 'data' branch only,
+    # but be defensive in case someone manually merges data -> main).
+    paths-ignore:
+      - 'dashboard.html'
+      - 'jobs_latest.*'
+      - 'companies.json'
+      - 'jobs.db'
+
+# Permissions needed for: checking out code, writing the data branch, and
+# deploying to GitHub Pages.
+permissions:
+  contents: write   # push state to 'data' branch
+  pages: write      # deploy to Pages
+  id-token: write   # required by actions/deploy-pages
+
+# Prevent overlapping runs. If a scheduled tick fires while a previous run is
+# still going (rare but possible), the newer one queues and the older finishes.
+concurrency:
+  group: jobs-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code (main branch)
+        uses: actions/checkout@v4
+
+      - name: Restore state from data branch
+        # Pull persisted state (companies.json, jobs.db, candidates) from the
+        # orphan 'data' branch. If the branch doesn't exist yet, this is a
+        # first run — we'll bootstrap from scratch below.
+        run: |
+          set -e
+          mkdir -p _state
+          if git ls-remote --exit-code --heads origin data > /dev/null 2>&1; then
+            echo "Restoring state from 'data' branch..."
+            git fetch origin data --depth=1
+            git --work-tree=_state checkout origin/data -- \
+              companies.json jobs.db discovery_candidates.json 2>/dev/null || true
+            for f in companies.json jobs.db discovery_candidates.json; do
+              if [ -f "_state/$f" ]; then
+                cp "_state/$f" "./$f"
+                echo "  Restored $f ($(du -h "$f" | cut -f1))"
+              fi
+            done
+          else
+            echo "No 'data' branch yet — first run, will bootstrap."
+          fi
+          rm -rf _state
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Bootstrap company list (only if missing)
+        # Bootstrap is idempotent and merges; safe to skip when state restored.
+        run: |
+          if [ ! -f companies.json ]; then
+            echo "No companies.json — running bootstrap..."
+            python bootstrap.py
+          else
+            echo "companies.json exists ($(wc -c < companies.json) bytes), skipping bootstrap."
+          fi
+
+      - name: Fetch jobs, run discovery, rebuild dashboard
+        run: python run.py
+
+      - name: Prune old rows from jobs.db
+        # Keep the SQLite cache bounded. Drop seen_jobs older than 60 days.
+        # Repost detection still works for anything within that window.
+        run: |
+          python - <<'PY'
+          import sqlite3, os
+          if os.path.exists("jobs.db"):
+              conn = sqlite3.connect("jobs.db")
+              cur = conn.execute("""
+                  DELETE FROM seen_jobs
+                  WHERE first_seen_at < datetime('now', '-60 days')
+              """)
+              print(f"Pruned {cur.rowcount} old rows from jobs.db")
+              conn.execute("VACUUM")
+              conn.commit()
+              conn.close()
+          PY
+
+      - name: Persist state to data branch
+        # Force-push the four state files to an orphan 'data' branch.
+        # Main branch stays untouched. One commit per run, only on this branch.
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Build a fresh orphan branch each run with only the state files.
+          # This means the data branch has a flat one-commit history — no
+          # multi-MB jobs.db diffs accumulating forever.
+          STATE_DIR=$(mktemp -d)
+          for f in companies.json jobs.db discovery_candidates.json; do
+            [ -f "$f" ] && cp "$f" "$STATE_DIR/"
+          done
+
+          git checkout --orphan data-new
+          git rm -rf . > /dev/null 2>&1 || true
+          cp "$STATE_DIR"/* . 2>/dev/null || true
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No state to commit."
+          else
+            git commit -m "state: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push origin data-new:data --force
+            echo "Pushed state to 'data' branch."
+          fi
+
+      - name: Prepare Pages artifact
+        # Stage the files Pages will serve: dashboard as index.html, plus the
+        # CSV/JSON exports so they're downloadable from the public URL.
+        run: |
+          mkdir -p _site
+          cp dashboard.html _site/index.html
+          [ -f jobs_latest.csv ] && cp jobs_latest.csv _site/
+          [ -f jobs_latest.json ] && cp jobs_latest.json _site/
+          # Tiny meta page with last-update info, for debugging from a browser.
+          cat > _site/status.html <<EOF
+          <!DOCTYPE html><meta charset="utf-8"><title>Status</title>
+          <body style="font-family:system-ui;max-width:600px;margin:40px auto;padding:20px">
+          <h1>Job finder status</h1>
+          <p>Last successful run: <strong>$(date -u +'%Y-%m-%d %H:%M UTC')</strong></p>
+          <p><a href="./">→ Dashboard</a></p>
+          <p><a href="./jobs_latest.csv">Download CSV</a> &middot;
+             <a href="./jobs_latest.json">Download JSON</a></p>
+          </body>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: fetch-and-deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
