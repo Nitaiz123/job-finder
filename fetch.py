@@ -78,6 +78,34 @@ def is_swe(title):
     return any(kw in title_lower for kw in SWE_KEYWORDS)
 
 
+# ---------------------------------------------------------------------------
+# Experience level detection
+# ---------------------------------------------------------------------------
+# Ordered from most-specific to least-specific so that e.g. "Staff Senior"
+# resolves to "Staff" rather than "Senior".
+_EXP_PATTERNS = [
+    ("Lead",   ["lead ", " lead", "tech lead", "technical lead"]),
+    ("Staff",  ["staff "]),
+    ("Principal", ["principal "]),
+    ("Senior", ["senior ", " sr.", " sr ", "sr. ", "sr engineer", "senior-"]),
+    ("Mid",    [" ii ", " ii,", " 2 ", " level 2", " mid ", "mid-level", "midlevel"]),
+    ("Entry",  [" i ", " i,", " 1 ", " level 1", "junior", " jr.", " jr ",
+                "associate ", "new grad", "entry level", "entry-level"]),
+]
+
+
+def classify_exp_level(title: str) -> str:
+    """
+    Infer experience level from a job title string.
+    Returns one of: Entry | Mid | Senior | Staff | Principal | Lead | Unspecified.
+    """
+    t = " " + title.lower() + " "   # pad so word-boundary checks work
+    for level, patterns in _EXP_PATTERNS:
+        if any(p in t for p in patterns):
+            return level
+    return "Unspecified"
+
+
 def location_region(location):
     """
     Returns (kept, region_key, needs_sponsorship, region_label).
@@ -235,6 +263,7 @@ def write_json(jobs):
             "url": j.get("url", ""),
             "job_hash": j.get("job_hash", ""),
             "description_full": j.get("description_full", "") or j.get("description_snippet", ""),
+            "exp_level": classify_exp_level(j.get("title", "")),
         })
     JSON_PATH.write_text(json.dumps(records, indent=2), encoding="utf-8")
     print(f"Wrote {len(records)} full records to {JSON_PATH}")

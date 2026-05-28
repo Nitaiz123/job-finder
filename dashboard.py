@@ -59,7 +59,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     border-radius: 8px;
     padding: 16px;
     display: grid;
-    grid-template-columns: 1fr 150px 150px 150px 120px;
+    grid-template-columns: 1fr 150px 150px 150px 150px 120px;
     gap: 12px;
     align-items: end;
     margin-bottom: 12px;
@@ -285,6 +285,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     z-index: 200;
   }}
   .toast.show {{ opacity: 1; }}
+  .exp-badge {{
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }}
+  .exp-entry     {{ background: #e8f5ee; color: #2d8659; }}
+  .exp-mid       {{ background: #eef2f7; color: #44607d; }}
+  .exp-senior    {{ background: #faf0ed; color: #c8553d; }}
+  .exp-staff     {{ background: #f3eeff; color: #6b3fa0; }}
+  .exp-principal {{ background: #fff3cd; color: #856404; }}
+  .exp-lead      {{ background: #fde8f0; color: #a0305a; }}
+  .exp-unspecified {{ background: #f5f5f0; color: #6b6b6b; }}
 </style>
 </head>
 <body>
@@ -327,6 +343,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </select>
     </div>
     <div class="control">
+      <label>Experience level</label>
+      <select id="expFilter">
+        <option value="">All levels</option>
+        <option value="Entry">Entry</option>
+        <option value="Mid">Mid</option>
+        <option value="Senior">Senior</option>
+        <option value="Staff">Staff</option>
+        <option value="Principal">Principal</option>
+        <option value="Lead">Lead</option>
+        <option value="Unspecified">Unspecified</option>
+      </select>
+    </div>
+    <div class="control">
       <label>Max age (hours)</label>
       <input type="number" id="ageFilter" value="48" min="1" max="720">
     </div>
@@ -346,6 +375,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <th data-sort="location">Location</th>
         <th data-sort="region_label">Region</th>
         <th data-sort="ats">ATS</th>
+        <th data-sort="exp_level">Level</th>
         <th data-sort="posted_at">Posted</th>
         <th>Actions</th>
       </tr>
@@ -400,6 +430,7 @@ function render() {{
   const ats = document.getElementById("atsFilter").value;
   const locFilter = document.getElementById("locFilter").value.toLowerCase().trim();
   const regionFilter = document.getElementById("regionFilter").value;
+  const expFilter = document.getElementById("expFilter").value;
   const hideSponsor = document.getElementById("hideSponsor").checked;
   const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;
 
@@ -409,6 +440,7 @@ function render() {{
                     j.company.toLowerCase().includes(search))) return false;
     if (locFilter && !(j.location || "").toLowerCase().includes(locFilter)) return false;
     if (regionFilter && (j.region_label || "") !== regionFilter) return false;
+    if (expFilter && (j.exp_level || "Unspecified") !== expFilter) return false;
     if (hideSponsor && String(j.needs_sponsorship) === "1") return false;
     const h = ageHours(j.posted_at);
     if (h !== null && h > maxAge) return false;
@@ -452,12 +484,18 @@ function render() {{
         ? `<button class="btn btn-copy" data-idx="${{idx}}">Copy JD</button>` +
           `<button class="btn btn-view" data-idx="${{idx}}">View</button>`
         : `<span class="age">no JD</span>`;
+      const expLevel = j.exp_level || "Unspecified";
+      const expClass = {{
+        "Entry": "exp-entry", "Mid": "exp-mid", "Senior": "exp-senior",
+        "Staff": "exp-staff", "Principal": "exp-principal", "Lead": "exp-lead"
+      }}[expLevel] || "exp-unspecified";
       tr.innerHTML = `
         <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a>${{sponsorFlag}}</td>
         <td class="company">${{j.company}}</td>
         <td>${{j.location || "—"}}</td>
         <td><span class="region-badge">${{j.region_label || "—"}}</span></td>
         <td><span class="ats-badge">${{j.ats}}</span></td>
+        <td><span class="exp-badge ${{expClass}}">${{expLevel}}</span></td>
         <td class="${{ageClass}}">${{formatAge(j.posted_at)}}</td>
         <td class="actions">${{actions}}</td>
       `;
@@ -479,6 +517,7 @@ document.getElementById("search").addEventListener("input", render);
 document.getElementById("atsFilter").addEventListener("change", render);
 document.getElementById("locFilter").addEventListener("input", render);
 document.getElementById("regionFilter").addEventListener("change", render);
+document.getElementById("expFilter").addEventListener("change", render);
 document.getElementById("hideSponsor").addEventListener("change", render);
 document.getElementById("ageFilter").addEventListener("input", render);
 
