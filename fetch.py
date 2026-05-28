@@ -138,14 +138,26 @@ def classify_exp_level(title: str, description: str = "") -> str:
     text = (description or "").strip()
     years = _extract_years(text) if text else None
 
-    # Title-based fallback when JD has no explicit requirement
+    # Title-based fallback when JD has no explicit requirement.
+    # Any title that signals seniority -> 5+ years.
+    # Any title that signals entry level -> 0-2 years.
     if years is None:
         t = " " + (title or "").lower() + " "
-        if any(p in t for p in ["senior ", " sr.", " sr ", "staff ", "principal ",
-                                 "lead ", " lead", "tech lead"]):
+        SENIOR_SIGNALS = [
+            "senior ", "senior-", " sr.", " sr ", "sr. ",
+            "staff ", "principal ", "distinguished ",
+            "lead ", " lead,", "tech lead", "technical lead",
+            "director", "architect", "head of",
+            "manager", "vp ", " vp,",
+        ]
+        ENTRY_SIGNALS = [
+            "junior", " jr.", " jr ", "associate ",
+            "new grad", "entry level", "entry-level",
+            " i ", " i,", " level 1", " level i ",
+        ]
+        if any(p in t for p in SENIOR_SIGNALS):
             return "5+ years"
-        if any(p in t for p in ["junior", " jr.", " jr ", "associate ",
-                                 "new grad", "entry level", "entry-level"]):
+        if any(p in t for p in ENTRY_SIGNALS):
             return "0-2 years"
         return "Unspecified"
 
