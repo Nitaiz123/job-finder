@@ -79,31 +79,81 @@ def is_swe(title):
 
 
 # ---------------------------------------------------------------------------
-# Experience level detection
+# Experience level detection — parsed from job description text
 # ---------------------------------------------------------------------------
-# Ordered from most-specific to least-specific so that e.g. "Staff Senior"
-# resolves to "Staff" rather than "Senior".
-_EXP_PATTERNS = [
-    ("Lead",   ["lead ", " lead", "tech lead", "technical lead"]),
-    ("Staff",  ["staff "]),
-    ("Principal", ["principal "]),
-    ("Senior", ["senior ", " sr.", " sr ", "sr. ", "sr engineer", "senior-"]),
-    ("Mid",    [" ii ", " ii,", " 2 ", " level 2", " mid ", "mid-level", "midlevel"]),
-    ("Entry",  [" i ", " i,", " 1 ", " level 1", "junior", " jr.", " jr ",
-                "associate ", "new grad", "entry level", "entry-level"]),
-]
+import re as _re
+
+# Matches patterns like:
+#   "3+ years", "3-5 years", "at least 5 years", "minimum 2 years",
+#   "5 or more years", "2 to 4 years of experience"
+_YOE_RE = _re.compile(
+    r"""(?ix)
+    (?:
+        (\d+)\s*(?:\+|\s*or\s*more|\s*\+)   # "5+" or "5 or more"
+        |                                     # OR
+        (\d+)\s*[-–to]+\s*(\d+)              # "3-5" or "3 to 5"
+        |                                     # OR
+        (?:at\s+least|minimum\s+of?|\bmin\.?)\s*(\d+)  # "at least 3"
+        |                                     # OR
+        (\d+)\s*(?:years?|yrs?)              # bare "3 years"
+    )
+    \s*(?:years?|yrs?)?\s*
+    (?:of\s+)?(?:professional\s+)?(?:relevant\s+)?experience
+    """,
+    _re.IGNORECASE | _re.VERBOSE,
+)
 
 
-def classify_exp_level(title: str) -> str:
+def _extract_years(text: str):
     """
-    Infer experience level from a job title string.
-    Returns one of: Entry | Mid | Senior | Staff | Principal | Lead | Unspecified.
+    Scan text for the first explicit years-of-experience requirement.
+    Returns the minimum years as a float, or None if not found.
     """
-    t = " " + title.lower() + " "   # pad so word-boundary checks work
-    for level, patterns in _EXP_PATTERNS:
-        if any(p in t for p in patterns):
-            return level
-    return "Unspecified"
+    for m in _YOE_RE.finditer(text):
+        # Group 1: "N+" or "N or more"  -> min = N
+        if m.group(1):
+            return float(m.group(1))
+        # Groups 2+3: "N-M" range -> min = N
+        if m.group(2) and m.group(3):
+            return float(m.group(2))
+        # Group 4: "at least N" / "minimum N"
+        if m.group(4):
+            return float(m.group(4))
+        # Group 5: bare "N years of experience"
+        if m.group(5):
+            return float(m.group(5))
+    return None
+
+
+def classify_exp_level(title: str, description: str = "") -> str:
+    """
+    Classify a job by years-of-experience requirement extracted from the JD.
+    Buckets:
+      0-2  -> "0-2 years"
+      3-5  -> "3-5 years"
+      5+   -> "5+ years"
+      None -> "Unspecified"
+    Falls back to title heuristics only when the JD yields nothing.
+    """
+    text = (description or "").strip()
+    years = _extract_years(text) if text else None
+
+    # Title-based fallback when JD has no explicit requirement
+    if years is None:
+        t = " " + (title or "").lower() + " "
+        if any(p in t for p in ["senior ", " sr.", " sr ", "staff ", "principal ",
+                                 "lead ", " lead", "tech lead"]):
+            return "5+ years"
+        if any(p in t for p in ["junior", " jr.", " jr ", "associate ",
+                                 "new grad", "entry level", "entry-level"]):
+            return "0-2 years"
+        return "Unspecified"
+
+    if years <= 2:
+        return "0-2 years"
+    if years <= 5:
+        return "3-5 years"
+    return "5+ years"
 
 
 def location_region(location):
@@ -263,7 +313,10 @@ def write_json(jobs):
             "url": j.get("url", ""),
             "job_hash": j.get("job_hash", ""),
             "description_full": j.get("description_full", "") or j.get("description_snippet", ""),
-            "exp_level": classify_exp_level(j.get("title", "")),
+            "exp_level": classify_exp_level(
+                j.get("title", ""),
+                j.get("description_full", "") or j.get("description_snippet", ""),
+            ),
         })
     JSON_PATH.write_text(json.dumps(records, indent=2), encoding="utf-8")
     print(f"Wrote {len(records)} full records to {JSON_PATH}")

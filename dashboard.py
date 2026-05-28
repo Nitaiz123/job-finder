@@ -294,12 +294,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }}
-  .exp-entry     {{ background: #e8f5ee; color: #2d8659; }}
-  .exp-mid       {{ background: #eef2f7; color: #44607d; }}
-  .exp-senior    {{ background: #faf0ed; color: #c8553d; }}
-  .exp-staff     {{ background: #f3eeff; color: #6b3fa0; }}
-  .exp-principal {{ background: #fff3cd; color: #856404; }}
-  .exp-lead      {{ background: #fde8f0; color: #a0305a; }}
+  .exp-0-2       {{ background: #e8f5ee; color: #2d8659; }}
+  .exp-3-5       {{ background: #eef2f7; color: #44607d; }}
+  .exp-5plus     {{ background: #faf0ed; color: #c8553d; }}
   .exp-unspecified {{ background: #f5f5f0; color: #6b6b6b; }}
 </style>
 </head>
@@ -343,15 +340,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </select>
     </div>
     <div class="control">
-      <label>Experience level</label>
+      <label>Experience (years)</label>
       <select id="expFilter">
         <option value="">All levels</option>
-        <option value="Entry">Entry</option>
-        <option value="Mid">Mid</option>
-        <option value="Senior">Senior</option>
-        <option value="Staff">Staff</option>
-        <option value="Principal">Principal</option>
-        <option value="Lead">Lead</option>
+        <option value="0-2 years">0–2 years</option>
+        <option value="3-5 years">3–5 years</option>
+        <option value="5+ years">5+ years</option>
         <option value="Unspecified">Unspecified</option>
       </select>
     </div>
@@ -486,8 +480,9 @@ function render() {{
         : `<span class="age">no JD</span>`;
       const expLevel = j.exp_level || "Unspecified";
       const expClass = {{
-        "Entry": "exp-entry", "Mid": "exp-mid", "Senior": "exp-senior",
-        "Staff": "exp-staff", "Principal": "exp-principal", "Lead": "exp-lead"
+        "0-2 years": "exp-0-2",
+        "3-5 years": "exp-3-5",
+        "5+ years":  "exp-5plus",
       }}[expLevel] || "exp-unspecified";
       tr.innerHTML = `
         <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a>${{sponsorFlag}}</td>
