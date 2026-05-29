@@ -1117,67 +1117,61 @@ def fetch_google(slug="google"):
 
 def fetch_microsoft(slug="microsoft"):
     """
-    Microsoft Research Careers scraper using the WordPress REST API.
+    Microsoft Careers scraper using the PCSX search API.
 
-    Microsoft Research publishes job opportunities at:
-      https://www.microsoft.com/en-us/research/careers/open-positions/
+    Discovered from HAR analysis of apply.careers.microsoft.com.
+    Uses the Eightfold-powered PCSX search endpoint:
+      GET https://apply.careers.microsoft.com/api/pcsx/search
 
-    The page is backed by a WordPress faceted-search REST endpoint:
-      GET https://www.microsoft.com/en-us/research/wp-json/microsoft-research/v1/faceted-search
-
-    Parameters (query string):
-      facet[date][fixed]  - date filter, use 'any' for all
-      filter[post_type][] - post type, use 'msr-job' for jobs
-      page                - 1-based page number
-      post_id             - 914625 (the Open Positions page ID, required)
-      per_page            - results per page (default 10, max ~50)
+    Parameters:
+      domain    - microsoft.com
+      query     - search term (e.g. 'software engineer')
+      location  - optional location filter
+      start     - 0-based offset for pagination (10 per page)
 
     Response structure:
       {
-        found_posts: N,
-        posts_per_page: 10,
-        max_num_pages: N,
-        posts: [
-          {
-            data: {
-              post_title: str,
-              post_content: str,   # full description HTML
-              post_date: str,      # 'YYYY-MM-DD HH:MM:SS'
-              permalink: str,      # direct URL
-              post_type: 'msr-job-opportunity',
-              meta: {msr_job_location: [...], ...}
-            },
-            markup: str            # rendered HTML card
-          }, ...
-        ]
+        data: {
+          count: N,
+          positions: [
+            {
+              id: int,
+              name: str,           # job title
+              locations: [str],    # list of location strings
+              postedTs: int,       # Unix timestamp
+              department: str,
+              workLocationOption: str,  # 'onsite'/'hybrid'/'remote'
+              positionUrl: str,    # relative URL path
+            }, ...
+          ]
+        }
       }
 
-    Location is extracted from the rendered markup HTML (most reliable).
     The slug parameter is ignored; exists for interface consistency.
     """
-    BASE = (
-        "https://www.microsoft.com/en-us/research/"
-        "wp-json/microsoft-research/v1/faceted-search"
-    )
+    BASE = "https://apply.careers.microsoft.com/api/pcsx/search"
+    BASE_URL = "https://apply.careers.microsoft.com"
     PAGE_SIZE = 10
     MAX_PAGES = 30  # 300 jobs max per run
-    POST_ID = "914625"  # Microsoft Research Open Positions page ID
 
     h = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
         "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://www.microsoft.com/en-us/research/careers/open-positions/",
+        "Referer": "https://apply.careers.microsoft.com/careers?query=software+engineer",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
     }
 
     jobs_out = []
 
-    for page in range(1, MAX_PAGES + 1):
+    for page in range(MAX_PAGES):
         params = {
-            "facet[date][fixed]": "any",
-            "filter[post_type][]": "msr-job",
-            "page": page,
-            "post_id": POST_ID,
+            "domain": "microsoft.com",
+            "query": "software engineer",
+            "location": "",
+            "start": page * PAGE_SIZE,
         }
         try:
             r = requests.get(
@@ -1189,71 +1183,49 @@ def fetch_microsoft(slug="microsoft"):
         except (requests.RequestException, ValueError):
             break
 
-        posts = data.get("posts", [])
-        if not posts:
+        positions = data.get("data", {}).get("positions", [])
+        if not positions:
             break
 
-        for post in posts:
-            d = post.get("data", {})
-            markup = post.get("markup", "")
-
-            title = _strip_html(d.get("post_title", ""))
-            permalink = d.get("permalink", "")
-            posted_raw = d.get("post_date", "")  # 'YYYY-MM-DD HH:MM:SS'
-            desc_html = d.get("post_content", "") or d.get("post_content_filtered", "")
-            desc = _strip_html(desc_html)
-
-            # Extract location from rendered markup HTML (most reliable)
-            location = ""
-            if markup:
-                loc_match = re.search(
-                    r'Location[^<]*</[^>]+>\s*([^<]{3,100})', markup
-                )
-                if loc_match:
-                    location = re.sub(r'[:\s]+', ' ', loc_match.group(1)).strip()
-                else:
-                    # Fallback: look for city/state pattern
-                    loc_match2 = re.search(
-                        r'([A-Z][a-z]+(?:,\s*[A-Z]{2})?(?:,\s*[A-Z]{2})?)',
-                        markup
-                    )
-                    if loc_match2:
-                        location = loc_match2.group(1).strip()
-
-            # Department from research areas in markup
-            dept = ""
-            area_match = re.search(
-                r'Research Area[^<]*</[^>]+>\s*([^<]{3,200})', markup
-            )
-            if area_match:
-                dept = re.sub(r'[:\s]+', ' ', area_match.group(1)).strip()
-
-            # Parse posted date
-            posted_at = ""
-            if posted_raw:
-                try:
-                    from datetime import datetime, timezone
-                    dt = datetime.strptime(posted_raw, "%Y-%m-%d %H:%M:%S")
-                    posted_at = dt.replace(tzinfo=timezone.utc).isoformat()
-                except ValueError:
-                    posted_at = posted_raw
-
-            if not title or not permalink:
+        from datetime import datetime, timezone as tz
+        for pos in positions:
+            title = pos.get("name", "").strip()
+            if not title:
                 continue
 
+            # Location: use first entry from locations list
+            locations = pos.get("locations", []) or []
+            location = locations[0] if locations else ""
+
+            # URL
+            pos_url = pos.get("positionUrl", "")
+            url = BASE_URL + pos_url if pos_url.startswith("/") else pos_url
+
+            # Posted date from Unix timestamp
+            posted_ts = pos.get("postedTs", 0)
+            posted_at = ""
+            if posted_ts:
+                try:
+                    posted_at = datetime.fromtimestamp(posted_ts, tz=tz.utc).isoformat()
+                except (ValueError, OSError):
+                    pass
+
+            dept = pos.get("department", "")
+            work_option = pos.get("workLocationOption", "")
+
             jobs_out.append({
-                "company": "microsoft",
+                "company": "Microsoft",
                 "ats": "microsoft",
                 "title": title,
                 "location": location,
-                "url": permalink,
+                "url": url,
                 "posted_at": posted_at,
                 "department": dept,
-                "description_snippet": desc[:500],
-                "description_full": desc,
+                "description_snippet": work_option,
+                "description_full": "",
             })
 
-        if len(posts) < PAGE_SIZE:
+        if len(positions) < PAGE_SIZE:
             break
 
     return jobs_out
