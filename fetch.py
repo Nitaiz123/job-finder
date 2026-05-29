@@ -325,6 +325,10 @@ def write_json(new_jobs):
     now_iso = datetime.now(timezone.utc).isoformat()
     for j in new_jobs:
         h = j.get("job_hash", "")
+        # Preserve original first_seen_at if this job was already accumulated.
+        # Only set it to now for truly new jobs.
+        original_first_seen = existing.get(h, {}).get("first_seen_at", "")
+        is_truly_new = h not in existing
         rec = {
             "company": j.get("company", ""),
             "ats": j.get("ats", ""),
@@ -334,7 +338,7 @@ def write_json(new_jobs):
             "needs_sponsorship": j.get("needs_sponsorship", 0),
             "department": j.get("department", ""),
             "posted_at": j.get("posted_at", ""),
-            "first_seen_at": now_iso,
+            "first_seen_at": original_first_seen if original_first_seen else now_iso,
             "url": j.get("url", ""),
             "job_hash": h,
             "description_full": j.get("description_full", "") or j.get("description_snippet", ""),
@@ -342,7 +346,7 @@ def write_json(new_jobs):
                 j.get("title", ""),
                 j.get("description_full", "") or j.get("description_snippet", ""),
             ),
-            "is_new": True,
+            "is_new": is_truly_new,
         }
         existing[h] = rec
 
