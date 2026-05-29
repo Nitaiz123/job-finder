@@ -119,6 +119,16 @@ jobs:
               conn2.close()
           PY
 
+      - name: Send email notification
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          NOTIFY_TO: nitaipujari@gmail.com
+        run: |
+          python ./notify.py \
+            "${{ steps.fetch.outputs.new_count }}" \
+            "${{ steps.fetch.outputs.total_count }}" \
+            "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
       - name: Persist state to data branch
         # Force-push the four state files to an orphan 'data' branch.
         # Main branch stays untouched. One commit per run, only on this branch.
@@ -146,16 +156,6 @@ jobs:
             git push origin data-new:data --force
             echo "Pushed state to 'data' branch."
           fi
-
-      - name: Send email notification
-        env:
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          NOTIFY_TO: nitaipujari@gmail.com
-        run: |
-          python ./notify.py \
-            "${{ steps.fetch.outputs.new_count }}" \
-            "${{ steps.fetch.outputs.total_count }}" \
-            "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Prepare Pages artifact
         # Stage the files Pages will serve: dashboard as index.html, plus the
