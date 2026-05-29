@@ -568,9 +568,10 @@ CURATED_SEED = {
         "crowdstrike", "sentinelone", "cylance", "carbonblack",
         "proofpoint", "mimecast", "barracuda", "sophos", "trend",
     ],
-    # Amazon and Apple: custom ATS scrapers. Use a single sentinel slug.
+    # Amazon, Apple, and Google: custom ATS scrapers. Use a single sentinel slug.
     "amazon": ["amazon"],
     "apple": ["apple"],
+    "google": ["google"],
     # Meta: uses Greenhouse for engineering roles
     # (metacareers.com blocks bots; Greenhouse board is publicly accessible)
     # Rippling: fast-growing ATS used by many startups.

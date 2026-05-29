@@ -906,3 +906,288 @@ def fetch_apple(slug="apple"):
 
 FETCHERS["amazon"] = fetch_amazon
 FETCHERS["apple"] = fetch_apple
+
+
+def fetch_google(slug="google"):
+    """
+    Google Careers scraper using the internal batchexecute RPC API.
+
+    Google's careers site uses a Google-internal RPC framework (batchexecute)
+    with RPC method ``r06xKb`` for job search. The endpoint is:
+      POST https://www.google.com/about/careers/applications/_/HiringCportalFrontendUi/data/batchexecute
+
+    The request requires specific browser-fingerprint headers captured from a
+    real browser session (x-browser-validation, x-browser-year, bl build label).
+    These are stable across sessions as long as the build label is current.
+
+    Response format: )]}'\nSIZE\n[["wrb.fr","r06xKb","JSON_STRING",...]]\n...
+    The inner JSON is a list: [job_list, None, total_count]
+    Each job entry is a list with fields at fixed indices:
+      [0]  job_id (str)
+      [1]  title (str)
+      [2]  apply_url (str, signin redirect)
+      [3]  responsibilities HTML (list: [None, html])
+      [4]  qualifications HTML (list: [None, html])
+      [9]  locations (list of [city_str, [addr], city, zip, state, country])
+      [10] overview HTML (list: [None, html])
+      [12] posted_at timestamp (list: [seconds, nanoseconds])
+    """
+    BASE_URL = (
+        "https://www.google.com/about/careers/applications/"
+        "_/HiringCportalFrontendUi/data/batchexecute"
+    )
+    # Build label from HAR — changes with Google deployments (~weekly)
+    # but the validation token is tied to this specific bl value.
+    BL = "boq_corp-hiring-boq-cportal-frontend_20260527.06_p0"
+    VALIDATION = "DFscXLDsHH1VQnRCDDL79rC1sbU="
+    MAX_PAGES = 15  # 20 jobs/page → 300 jobs max per run
+
+    h = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/148.0.7778.179 Safari/537.36"
+        ),
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept": "*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://www.google.com",
+        "Referer": "https://www.google.com/",
+        "X-Same-Domain": "1",
+        "X-Browser-Channel": "stable",
+        "X-Browser-Copyright": "Copyright 2026 Google LLC. All Rights Reserved.",
+        "X-Browser-Validation": VALIDATION,
+        "X-Browser-Year": "2026",
+        "sec-ch-ua": '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "DNT": "1",
+    }
+
+    jobs_out = []
+
+    for page in range(1, MAX_PAGES + 1):
+        # Build the inner RPC payload
+        inner = (
+            '[[null,null,null,null,"en-US",null,null,' + str(page) + ']]'
+        )
+        freq = json.dumps([[['r06xKb', inner, None, '3']]])
+        body = urllib.parse.urlencode({'f.req': freq, '': ''})
+
+        params = {
+            'rpcids': 'r06xKb',
+            'source-path': '/about/careers/applications/jobs/results',
+            'f.sid': '-389101631705574599',
+            'bl': BL,
+            'hl': 'en-US',
+            'soc-app': '1',
+            'soc-platform': '1',
+            'soc-device': '1',
+            '_reqid': str(1000000 + page * 100),
+            'rt': 'c',
+        }
+
+        try:
+            r = requests.post(
+                BASE_URL, params=params, headers=h, data=body,
+                timeout=REQUEST_TIMEOUT
+            )
+            if r.status_code != 200:
+                break
+            raw = r.text
+        except requests.RequestException:
+            break
+
+        # Parse the batchexecute response
+        jobs_data = None
+        for line in raw.split('\n'):
+            line = line.strip()
+            if line.startswith('["wrb.fr","r06xKb"') or line.startswith('[["wrb.fr","r06xKb"'):
+                try:
+                    outer = json.loads(line)
+                    # Handle both [[...]] and [...] wrapping
+                    if isinstance(outer[0], list):
+                        inner_json = outer[0][2]
+                    else:
+                        inner_json = outer[2]
+                    if inner_json:
+                        jobs_data = json.loads(inner_json)
+                except (json.JSONDecodeError, IndexError, TypeError):
+                    pass
+                break
+
+        if not jobs_data or not isinstance(jobs_data, list) or not jobs_data[0]:
+            break
+
+        job_list = jobs_data[0]
+        for job_entry in job_list:
+            if not isinstance(job_entry, list) or len(job_entry) < 3:
+                continue
+
+            job_id = job_entry[0] or ''
+            title = job_entry[1] or ''
+            apply_url = job_entry[2] or ''
+
+            # Build a stable direct URL from job_id
+            job_url = (
+                f"https://www.google.com/about/careers/applications/jobs/results/{job_id}"
+                if job_id else apply_url
+            )
+
+            # Location: field [9] is a list of location tuples
+            location = ''
+            if len(job_entry) > 9 and isinstance(job_entry[9], list):
+                locs = job_entry[9]
+                parts = []
+                for loc in locs:
+                    if isinstance(loc, list) and loc:
+                        city = loc[2] if len(loc) > 2 and loc[2] else ''
+                        state = loc[4] if len(loc) > 4 and loc[4] else ''
+                        country = loc[5] if len(loc) > 5 and loc[5] else ''
+                        part = ', '.join(filter(None, [city, state, country]))
+                        if part:
+                            parts.append(part)
+                location = '; '.join(parts)
+
+            # Description: combine overview [10], responsibilities [3], qualifications [4]
+            def _get_html(entry, idx):
+                if len(entry) > idx and isinstance(entry[idx], list) and len(entry[idx]) > 1:
+                    return entry[idx][1] or ''
+                return ''
+
+            overview_html = _get_html(job_entry, 10)
+            resp_html = _get_html(job_entry, 3)
+            qual_html = _get_html(job_entry, 4)
+            full_html = '\n'.join(filter(None, [overview_html, resp_html, qual_html]))
+            desc = _strip_html(full_html)
+
+            # Posted timestamp: field [12] = [seconds, nanoseconds]
+            posted_at = ''
+            if len(job_entry) > 12 and isinstance(job_entry[12], list) and job_entry[12]:
+                ts = job_entry[12][0]
+                if ts:
+                    try:
+                        from datetime import datetime, timezone
+                        posted_at = datetime.fromtimestamp(
+                            int(ts), tz=timezone.utc
+                        ).isoformat()
+                    except (ValueError, OSError):
+                        pass
+
+            # Department: field [7]
+            dept = job_entry[7] if len(job_entry) > 7 and isinstance(job_entry[7], str) else ''
+
+            jobs_out.append({
+                'company': 'google',
+                'ats': 'google',
+                'title': title,
+                'location': location,
+                'url': job_url,
+                'posted_at': posted_at,
+                'department': dept,
+                'description_snippet': desc[:500],
+                'description_full': desc,
+            })
+
+        if len(job_list) < 20:
+            break
+
+    return jobs_out
+
+
+def fetch_microsoft(slug="microsoft"):
+    """
+    Microsoft Careers scraper using their public search API.
+
+    Microsoft runs careers at careers.microsoft.com, backed by a public
+    REST/JSON search endpoint:
+      GET https://gcsservices.careers.microsoft.com/search/api/v1/search
+
+    Parameters:
+      pg   - page number (1-based)
+      pgSz - page size (max 20)
+      l    - locale (en_us)
+
+    The slug parameter is ignored (single Microsoft board); exists for
+    interface consistency.
+    """
+    BASE = "https://gcsservices.careers.microsoft.com/search/api/v1/search"
+    PAGE_SIZE = 20
+    MAX_PAGES = 15  # 300 jobs max per run
+
+    h = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://careers.microsoft.com/",
+    }
+
+    jobs_out = []
+
+    for page in range(1, MAX_PAGES + 1):
+        params = {
+            'pg': page,
+            'pgSz': PAGE_SIZE,
+            'l': 'en_us',
+            'phaseId': '',
+        }
+        try:
+            r = requests.get(BASE, headers=h, params=params, timeout=REQUEST_TIMEOUT)
+            if r.status_code != 200:
+                break
+            data = r.json()
+        except (requests.RequestException, ValueError):
+            break
+
+        # Response structure: {operationResult: {result: {jobs: [...], totalJobs: N}}}
+        result = (
+            data.get('operationResult', {})
+                .get('result', {})
+        )
+        jobs = result.get('jobs', [])
+        if not jobs:
+            break
+
+        for j in jobs:
+            job_id = j.get('jobId', '') or j.get('id', '')
+            job_url = (
+                f"https://careers.microsoft.com/us/en/job/{job_id}"
+                if job_id else ''
+            )
+
+            # Location
+            locs = j.get('jobLocations', []) or j.get('locations', [])
+            if isinstance(locs, list):
+                location = '; '.join(
+                    l.get('location', '') if isinstance(l, dict) else str(l)
+                    for l in locs
+                )
+            else:
+                location = str(locs)
+
+            desc = _strip_html(j.get('description', '') or j.get('jobSummary', ''))
+            posted_raw = j.get('postedDate', '') or j.get('postDate', '')
+
+            jobs_out.append({
+                'company': 'microsoft',
+                'ats': 'microsoft',
+                'title': j.get('title', '') or j.get('jobTitle', ''),
+                'location': location,
+                'url': job_url,
+                'posted_at': _parse_iso(posted_raw),
+                'department': j.get('category', '') or j.get('discipline', ''),
+                'description_snippet': desc[:500],
+                'description_full': desc,
+            })
+
+        if len(jobs) < PAGE_SIZE:
+            break
+
+    return jobs_out
+
+
+FETCHERS['google'] = fetch_google
+FETCHERS['microsoft'] = fetch_microsoft
