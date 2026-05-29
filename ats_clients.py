@@ -27,7 +27,9 @@ API references:
 """
 
 import html
+import json
 import re
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -770,9 +772,12 @@ def fetch_amazon(slug="amazon"):
         "Accept-Language": "en-US,en;q=0.9",
     }
 
+    # Search for software/engineering roles specifically
+    SWE_QUERY = "software engineer OR developer OR SDE OR machine learning OR data engineer OR devops OR cloud engineer OR security engineer OR mobile engineer OR iOS OR android OR platform engineer OR site reliability OR SRE"
+
     for page in range(MAX_PAGES):
         params = {
-            "base_query": "",
+            "base_query": SWE_QUERY,
             "loc_query": "",
             "result_limit": LIMIT,
             "offset": page * LIMIT,
@@ -832,8 +837,14 @@ def fetch_apple(slug="apple"):
     Each page returns 20 jobs. We paginate up to MAX_PAGES.
     The slug parameter is ignored (single Apple board); exists for consistency.
     """
+    # Apple's careers site uses server-side React Router hydration data.
+    # The search page embeds all job data as a JSON-encoded string in:
+    #   window.__staticRouterHydrationData = JSON.parse("...");
+    # We decode it with json.loads('"' + raw + '"') to handle double-escaping.
     BASE = "https://jobs.apple.com/en-us/search"
-    MAX_PAGES = 15  # 300 jobs max per run
+    # Filter for software engineering roles
+    QUERY = "software engineer"
+    MAX_PAGES = 25  # 500 jobs max per run — needed since results include global jobs
     jobs_out = []
 
     h = {
@@ -843,7 +854,8 @@ def fetch_apple(slug="apple"):
     }
 
     for page in range(1, MAX_PAGES + 1):
-        url = f"{BASE}?q=&sort=relevance&page={page}"
+        # Use relevance sort so SWE roles appear before retail/operations jobs
+        url = f"{BASE}?q={requests.utils.quote(QUERY)}&sort=relevance&page={page}"
         try:
             r = requests.get(url, headers=h, timeout=REQUEST_TIMEOUT)
             if r.status_code != 200:
@@ -862,8 +874,10 @@ def fetch_apple(slug="apple"):
 
         raw = m.group(1)
         try:
-            decoded = raw.encode('utf-8').decode('unicode_escape')
-            data = __import__('json').loads(decoded)
+            # The raw string is double-JSON-encoded; wrap in quotes so json.loads
+            # handles all escape sequences correctly.
+            decoded_str = json.loads('"' + raw + '"')
+            data = json.loads(decoded_str)
         except Exception:
             break
 
@@ -876,23 +890,26 @@ def fetch_apple(slug="apple"):
             locs = j.get('locations', []) or []
             location_str = '; '.join(
                 ', '.join(filter(None, [
-                    l.get('city', ''), l.get('stateProvince', ''), l.get('countryCode', '')
+                    l.get('city', ''), l.get('stateProvince', ''),
+                    l.get('countryName', '') or l.get('countryCode', '')
                 ]))
                 for l in locs
             ) if locs else ''
 
             pos_id = j.get('positionId', '')
             job_url = f"https://jobs.apple.com/en-us/details/{pos_id}" if pos_id else ''
-            desc = j.get('jobSummary', '')
+            desc = _strip_html(j.get('jobSummary', '') or '')
+
+            posted_raw = (j.get('postDateInGMT') or j.get('postingDate') or '')
 
             jobs_out.append({
                 "company": "apple",
                 "ats": "apple",
-                "title": j.get('postingTitle', ''),
+                "title": j.get('postingTitle', '') or j.get('title', ''),
                 "location": location_str,
                 "url": job_url,
-                "posted_at": _parse_iso(j.get('postDateInGMT') or j.get('postingDate', '')),
-                "department": '',
+                "posted_at": _parse_iso(posted_raw),
+                "department": j.get('team', '') or '',
                 "description_snippet": desc[:500],
                 "description_full": desc,
             })
