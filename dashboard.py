@@ -488,8 +488,8 @@ function render() {{
     if (regionFilter && (j.region_label || "") !== regionFilter) return false;
     if (expFilter && (j.exp_level || "Unspecified") !== expFilter) return false;
     if (hideSponsor && String(j.needs_sponsorship) === "1") return false;
-    // Age filter uses first_seen_at (when we first discovered the job)
-    const seenIso = j.first_seen_at || j.posted_at;
+    // Age filter uses posted_at (when the job was actually posted)
+    const seenIso = j.posted_at || j.first_seen_at;
     const h = ageHours(seenIso);
     // If date is missing and filter is not "All time", exclude the job
     if (maxAge < 999999) {{
