@@ -550,9 +550,10 @@ CURATED_SEED = {
         "Vinted", "Wolt", "Onfido", "Quantexa", "Tessian",
         "Tractable", "Synthesia", "Wayve", "Improbable", "Darktrace",
     ],
+    # Microsoft: custom scraper (Microsoft Research WordPress API)
+    "microsoft": ["microsoft"],
     # Jobvite: popular ATS for US mid-market companies.
     "jobvite": [
-        "amazon", "microsoft", "google", "apple", "meta",
         "oracle", "sap", "salesforce", "servicenow", "workday",
         "zendesk", "hubspot", "marketo", "eloqua", "pardot",
         "twilio", "sendgrid", "mailchimp", "constantcontact",
