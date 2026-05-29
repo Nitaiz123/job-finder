@@ -363,8 +363,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </select>
     </div>
     <div class="control">
-      <label>Max age (hours)</label>
-      <input type="number" id="ageFilter" value="48" min="1" max="720">
+      <label>Posted within</label>
+      <select id="ageFilter">
+        <option value="24">Last 24 hours</option>
+        <option value="48" selected>Last 48 hours</option>
+        <option value="168">Past week</option>
+        <option value="720">Past month</option>
+        <option value="999999">All time</option>
+      </select>
     </div>
   </div>
 </header>
@@ -446,7 +452,7 @@ function render() {{
   const regionFilter = document.getElementById("regionFilter").value;
   const expFilter = document.getElementById("expFilter").value;
   const hideSponsor = document.getElementById("hideSponsor").checked;
-    const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;
+    const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;  // hours
 
   let filtered = JOBS.filter(j => {{
     if (ats && j.ats !== ats) return false;

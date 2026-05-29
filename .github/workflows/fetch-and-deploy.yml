@@ -87,7 +87,16 @@ jobs:
           fi
 
       - name: Fetch jobs, run discovery, rebuild dashboard
-        run: python run.py
+        id: fetch
+        run: |
+          python run.py 2>&1 | tee /tmp/run_output.txt
+          # Extract new job count from the output line like:
+          # "Wrote N accumulated records to ... (M new this run)"
+          NEW=$(grep -oP '\(\K\d+(?= new this run\))' /tmp/run_output.txt | tail -1 || echo 0)
+          TOTAL=$(grep -oP 'Wrote \K\d+(?= accumulated)' /tmp/run_output.txt | tail -1 || echo 0)
+          echo "new_count=${NEW}" >> $GITHUB_OUTPUT
+          echo "total_count=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "New: ${NEW}, Total: ${TOTAL}"
 
       - name: Prune old rows from jobs.db
         # Keep the SQLite cache bounded. Drop seen_jobs older than 60 days.
@@ -137,6 +146,16 @@ jobs:
             git push origin data-new:data --force
             echo "Pushed state to 'data' branch."
           fi
+
+      - name: Send email notification
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          NOTIFY_TO: nitaipujari@gmail.com
+        run: |
+          python notify.py \
+            "${{ steps.fetch.outputs.new_count }}" \
+            "${{ steps.fetch.outputs.total_count }}" \
+            "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Prepare Pages artifact
         # Stage the files Pages will serve: dashboard as index.html, plus the
