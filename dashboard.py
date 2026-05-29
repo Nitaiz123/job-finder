@@ -40,7 +40,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     line-height: 1.5;
   }}
   header {{
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto 24px;
   }}
   h1 {{
@@ -57,12 +57,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 16px;
+    padding: 20px;
     display: grid;
-    grid-template-columns: 1fr 150px 150px 150px 150px 120px;
-    gap: 12px;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 14px 16px;
     align-items: end;
     margin-bottom: 12px;
+  }}
+  .control-wide {{
+    grid-column: 1 / -1;
+  }}
+  @media (max-width: 900px) {{
+    .controls {{
+      grid-template-columns: 1fr 1fr;
+    }}
+    .control-wide {{
+      grid-column: 1 / -1;
+    }}
+  }}
+  @media (max-width: 600px) {{
+    .controls {{
+      grid-template-columns: 1fr;
+    }}
   }}
   .control label {{
     display: block;
@@ -90,14 +107,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     font-size: 14px;
     color: var(--muted);
     margin-bottom: 12px;
-    max-width: 1200px;
+    max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
   }}
   .count strong {{ color: var(--ink); }}
   .container {{
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
+    overflow-x: auto;
   }}
   table {{
     width: 100%;
@@ -187,7 +205,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     vertical-align: middle;
   }}
   .toggle-row {{
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto 16px;
     display: flex;
     align-items: center;
@@ -316,29 +334,33 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
 <header class="container">
   <h1>Fresh SWE Jobs</h1>
-  <div class="meta">Generated {generated_at} &middot; {total_count} new postings &middot; Greenhouse + Lever + Ashby + Workable + Workday + Eightfold + iCIMS + CareerPuck</div>
+  <div class="meta">Generated {generated_at} &middot; {total_count} accumulated postings &middot; Greenhouse · Lever · Ashby · Workable · Workday · Eightfold · iCIMS · SmartRecruiters · Jobvite · Google · Amazon · Apple · Microsoft</div>
   <div class="controls">
-    <div class="control">
+    <!-- Row 1: Search (full width) -->
+    <div class="control control-wide">
       <label>Search title or company</label>
-      <input type="text" id="search" placeholder="e.g. backend, stripe, platform">
+      <input type="text" id="search" placeholder="e.g. backend, stripe, platform, openai">
     </div>
+    <!-- Row 2: Filters -->
     <div class="control">
-      <label>ATS</label>
-      <select id="atsFilter">
-        <option value="">All</option>
-        <option value="greenhouse">Greenhouse</option>
-        <option value="lever">Lever</option>
-        <option value="ashby">Ashby</option>
-        <option value="workable">Workable</option>
-        <option value="workday">Workday</option>
-        <option value="eightfold">Eightfold</option>
-        <option value="icims">iCIMS</option>
-        <option value="careerpuck">CareerPuck</option>
+      <label>Posted within</label>
+      <select id="ageFilter">
+        <option value="24">Last 24 hours</option>
+        <option value="48" selected>Last 48 hours</option>
+        <option value="168">Past week</option>
+        <option value="720">Past month</option>
+        <option value="999999">All time</option>
       </select>
     </div>
     <div class="control">
-      <label>Location contains</label>
-      <input type="text" id="locFilter" placeholder="e.g. remote, dallas">
+      <label>Experience (years)</label>
+      <select id="expFilter">
+        <option value="">All levels</option>
+        <option value="0-2 years">0–2 years</option>
+        <option value="3-5 years">3–5 years</option>
+        <option value="5+ years">5+ years</option>
+        <option value="Unspecified">Unspecified</option>
+      </select>
     </div>
     <div class="control">
       <label>Region</label>
@@ -353,23 +375,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </select>
     </div>
     <div class="control">
-      <label>Experience (years)</label>
-      <select id="expFilter">
-        <option value="">All levels</option>
-        <option value="0-2 years">0–2 years</option>
-        <option value="3-5 years">3–5 years</option>
-        <option value="5+ years">5+ years</option>
-        <option value="Unspecified">Unspecified</option>
-      </select>
+      <label>Location contains</label>
+      <input type="text" id="locFilter" placeholder="e.g. remote, dallas, NYC">
     </div>
     <div class="control">
-      <label>Posted within</label>
-      <select id="ageFilter">
-        <option value="24">Last 24 hours</option>
-        <option value="48" selected>Last 48 hours</option>
-        <option value="168">Past week</option>
-        <option value="720">Past month</option>
-        <option value="999999">All time</option>
+      <label>ATS / Source</label>
+      <select id="atsFilter">
+        <option value="">All sources</option>
+        <option value="greenhouse">Greenhouse</option>
+        <option value="lever">Lever</option>
+        <option value="ashby">Ashby</option>
+        <option value="workable">Workable</option>
+        <option value="workday">Workday</option>
+        <option value="eightfold">Eightfold</option>
+        <option value="icims">iCIMS</option>
+        <option value="careerpuck">CareerPuck</option>
+        <option value="smartrecruiters">SmartRecruiters</option>
+        <option value="jobvite">Jobvite</option>
+        <option value="google">Google</option>
+        <option value="amazon">Amazon</option>
+        <option value="apple">Apple</option>
+        <option value="microsoft">Microsoft</option>
       </select>
     </div>
   </div>
