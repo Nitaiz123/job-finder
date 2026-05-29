@@ -152,7 +152,7 @@ jobs:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           NOTIFY_TO: nitaipujari@gmail.com
         run: |
-          python notify.py \
+          python ${{ github.workspace }}/notify.py \
             "${{ steps.fetch.outputs.new_count }}" \
             "${{ steps.fetch.outputs.total_count }}" \
             "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
