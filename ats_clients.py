@@ -743,3 +743,166 @@ def fetch_rippling(slug):
 FETCHERS["smartrecruiters"] = fetch_smartrecruiters
 FETCHERS["jobvite"] = fetch_jobvite
 FETCHERS["rippling"] = fetch_rippling
+
+
+def fetch_amazon(slug="amazon"):
+    """
+    Amazon Jobs public search API.
+
+    Amazon runs its own ATS at amazon.jobs. The search endpoint returns JSON
+    with no authentication required.
+
+    Endpoint:
+      GET https://www.amazon.jobs/en/search.json?base_query=&result_limit=10&offset=N
+
+    Fetches up to 20 pages (200 jobs) of the most recent postings.
+    The slug parameter is ignored (there is only one Amazon jobs board);
+    it exists for interface consistency.
+    """
+    BASE = "https://www.amazon.jobs/en/search.json"
+    LIMIT = 10
+    MAX_PAGES = 20
+    jobs_out = []
+
+    h = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    for page in range(MAX_PAGES):
+        params = {
+            "base_query": "",
+            "loc_query": "",
+            "result_limit": LIMIT,
+            "offset": page * LIMIT,
+            "sort": "recent",
+        }
+        try:
+            r = requests.get(BASE, headers=h, params=params, timeout=REQUEST_TIMEOUT)
+            if r.status_code != 200:
+                break
+            data = r.json()
+        except (requests.RequestException, ValueError):
+            break
+
+        jobs = data.get("jobs", [])
+        if not jobs:
+            break
+
+        for j in jobs:
+            job_path = j.get("job_path", "")
+            job_url = f"https://www.amazon.jobs{job_path}" if job_path else ""
+            # Amazon's posted_date is a human string like "September 24, 2025"
+            posted_raw = j.get("posted_date", "")
+            try:
+                from datetime import datetime
+                posted_iso = datetime.strptime(posted_raw, "%B %d, %Y").replace(
+                    tzinfo=__import__('datetime').timezone.utc).isoformat() if posted_raw else ""
+            except (ValueError, AttributeError):
+                posted_iso = posted_raw
+
+            desc = _strip_html(j.get("description", "") or j.get("description_short", ""))
+            jobs_out.append({
+                "company": "amazon",
+                "ats": "amazon",
+                "title": j.get("title", ""),
+                "location": j.get("location", ""),
+                "url": job_url,
+                "posted_at": posted_iso,
+                "department": j.get("job_category", "") or j.get("category", ""),
+                "description_snippet": desc[:500],
+                "description_full": desc,
+            })
+
+        if len(jobs) < LIMIT:
+            break
+
+    return jobs_out
+
+
+def fetch_apple(slug="apple"):
+    """
+    Apple Jobs scraper using server-side hydration data.
+
+    Apple's careers site (jobs.apple.com) renders job listings server-side
+    and embeds them in a React Router hydration blob:
+      window.__staticRouterHydrationData = JSON.parse("...");
+
+    Each page returns 20 jobs. We paginate up to MAX_PAGES.
+    The slug parameter is ignored (single Apple board); exists for consistency.
+    """
+    BASE = "https://jobs.apple.com/en-us/search"
+    MAX_PAGES = 15  # 300 jobs max per run
+    jobs_out = []
+
+    h = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    for page in range(1, MAX_PAGES + 1):
+        url = f"{BASE}?q=&sort=relevance&page={page}"
+        try:
+            r = requests.get(url, headers=h, timeout=REQUEST_TIMEOUT)
+            if r.status_code != 200:
+                break
+            text = r.text
+        except requests.RequestException:
+            break
+
+        # Extract the hydration blob
+        m = re.search(
+            r'window\.__staticRouterHydrationData\s*=\s*JSON\.parse\("(.+?)"\);\s*</script>',
+            text, re.DOTALL
+        )
+        if not m:
+            break
+
+        raw = m.group(1)
+        try:
+            decoded = raw.encode('utf-8').decode('unicode_escape')
+            data = __import__('json').loads(decoded)
+        except Exception:
+            break
+
+        search_data = data.get('loaderData', {}).get('search', {})
+        results = search_data.get('searchResults', [])
+        if not results:
+            break
+
+        for j in results:
+            locs = j.get('locations', []) or []
+            location_str = '; '.join(
+                ', '.join(filter(None, [
+                    l.get('city', ''), l.get('stateProvince', ''), l.get('countryCode', '')
+                ]))
+                for l in locs
+            ) if locs else ''
+
+            pos_id = j.get('positionId', '')
+            job_url = f"https://jobs.apple.com/en-us/details/{pos_id}" if pos_id else ''
+            desc = j.get('jobSummary', '')
+
+            jobs_out.append({
+                "company": "apple",
+                "ats": "apple",
+                "title": j.get('postingTitle', ''),
+                "location": location_str,
+                "url": job_url,
+                "posted_at": _parse_iso(j.get('postDateInGMT') or j.get('postingDate', '')),
+                "department": '',
+                "description_snippet": desc[:500],
+                "description_full": desc,
+            })
+
+        # If fewer than 20 results, we've reached the last page
+        if len(results) < 20:
+            break
+
+    return jobs_out
+
+
+FETCHERS["amazon"] = fetch_amazon
+FETCHERS["apple"] = fetch_apple

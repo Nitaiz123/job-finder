@@ -61,6 +61,10 @@ ATS_PATTERNS = {
             re.IGNORECASE,
         ),
     ],
+    # Amazon: amazon.jobs URLs
+    # (not URL-extractable from repos; handled via sentinel slug in CURATED_SEED)
+    # Apple: jobs.apple.com URLs
+    # (not URL-extractable from repos; handled via sentinel slug in CURATED_SEED)
     # Eightfold: captures company from URLs like https://capitalone.eightfold.ai/careers
     "eightfold": [
         re.compile(r"([a-z0-9][a-z0-9\-]*)\.eightfold\.ai", re.IGNORECASE),
@@ -99,6 +103,7 @@ CURATED_SEED = {
         "vercel", "netlify", "render", "fly", "supabase", "neon", "planetscale",
         "cockroachlabs", "yugabyte", "pinecone", "weaviate", "qdrant", "chroma",
         "sourcegraph", "tabnine", "codeium", "cursor", "warp", "fig",
+        "meta", "facebook",  # Meta uses Greenhouse for many engineering roles
         "retool", "appsmith", "airplane", "windmill", "n8n", "make",
         "lattice", "culture-amp", "15five", "betterup", "modernhealth", "lyrahealth",
         "headspace", "calm", "hims", "ro", "hers", "noom",
@@ -563,6 +568,11 @@ CURATED_SEED = {
         "crowdstrike", "sentinelone", "cylance", "carbonblack",
         "proofpoint", "mimecast", "barracuda", "sophos", "trend",
     ],
+    # Amazon and Apple: custom ATS scrapers. Use a single sentinel slug.
+    "amazon": ["amazon"],
+    "apple": ["apple"],
+    # Meta: uses Greenhouse for engineering roles
+    # (metacareers.com blocks bots; Greenhouse board is publicly accessible)
     # Rippling: fast-growing ATS used by many startups.
     "rippling": [
         "rippling", "brex", "ramp", "mercury", "pilot",
