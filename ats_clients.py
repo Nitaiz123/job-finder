@@ -1100,90 +1100,143 @@ def fetch_google(slug="google"):
 
 def fetch_microsoft(slug="microsoft"):
     """
-    Microsoft Careers scraper using their public search API.
+    Microsoft Research Careers scraper using the WordPress REST API.
 
-    Microsoft runs careers at careers.microsoft.com, backed by a public
-    REST/JSON search endpoint:
-      GET https://gcsservices.careers.microsoft.com/search/api/v1/search
+    Microsoft Research publishes job opportunities at:
+      https://www.microsoft.com/en-us/research/careers/open-positions/
 
-    Parameters:
-      pg   - page number (1-based)
-      pgSz - page size (max 20)
-      l    - locale (en_us)
+    The page is backed by a WordPress faceted-search REST endpoint:
+      GET https://www.microsoft.com/en-us/research/wp-json/microsoft-research/v1/faceted-search
 
-    The slug parameter is ignored (single Microsoft board); exists for
-    interface consistency.
+    Parameters (query string):
+      facet[date][fixed]  - date filter, use 'any' for all
+      filter[post_type][] - post type, use 'msr-job' for jobs
+      page                - 1-based page number
+      post_id             - 914625 (the Open Positions page ID, required)
+      per_page            - results per page (default 10, max ~50)
+
+    Response structure:
+      {
+        found_posts: N,
+        posts_per_page: 10,
+        max_num_pages: N,
+        posts: [
+          {
+            data: {
+              post_title: str,
+              post_content: str,   # full description HTML
+              post_date: str,      # 'YYYY-MM-DD HH:MM:SS'
+              permalink: str,      # direct URL
+              post_type: 'msr-job-opportunity',
+              meta: {msr_job_location: [...], ...}
+            },
+            markup: str            # rendered HTML card
+          }, ...
+        ]
+      }
+
+    Location is extracted from the rendered markup HTML (most reliable).
+    The slug parameter is ignored; exists for interface consistency.
     """
-    BASE = "https://gcsservices.careers.microsoft.com/search/api/v1/search"
-    PAGE_SIZE = 20
-    MAX_PAGES = 15  # 300 jobs max per run
+    BASE = (
+        "https://www.microsoft.com/en-us/research/"
+        "wp-json/microsoft-research/v1/faceted-search"
+    )
+    PAGE_SIZE = 10
+    MAX_PAGES = 30  # 300 jobs max per run
+    POST_ID = "914625"  # Microsoft Research Open Positions page ID
 
     h = {
         "User-Agent": USER_AGENT,
         "Accept": "application/json",
         "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://careers.microsoft.com/",
+        "Referer": "https://www.microsoft.com/en-us/research/careers/open-positions/",
     }
 
     jobs_out = []
 
     for page in range(1, MAX_PAGES + 1):
         params = {
-            'pg': page,
-            'pgSz': PAGE_SIZE,
-            'l': 'en_us',
-            'phaseId': '',
+            "facet[date][fixed]": "any",
+            "filter[post_type][]": "msr-job",
+            "page": page,
+            "post_id": POST_ID,
         }
         try:
-            r = requests.get(BASE, headers=h, params=params, timeout=REQUEST_TIMEOUT)
+            r = requests.get(
+                BASE, headers=h, params=params, timeout=REQUEST_TIMEOUT
+            )
             if r.status_code != 200:
                 break
             data = r.json()
         except (requests.RequestException, ValueError):
             break
 
-        # Response structure: {operationResult: {result: {jobs: [...], totalJobs: N}}}
-        result = (
-            data.get('operationResult', {})
-                .get('result', {})
-        )
-        jobs = result.get('jobs', [])
-        if not jobs:
+        posts = data.get("posts", [])
+        if not posts:
             break
 
-        for j in jobs:
-            job_id = j.get('jobId', '') or j.get('id', '')
-            job_url = (
-                f"https://careers.microsoft.com/us/en/job/{job_id}"
-                if job_id else ''
-            )
+        for post in posts:
+            d = post.get("data", {})
+            markup = post.get("markup", "")
 
-            # Location
-            locs = j.get('jobLocations', []) or j.get('locations', [])
-            if isinstance(locs, list):
-                location = '; '.join(
-                    l.get('location', '') if isinstance(l, dict) else str(l)
-                    for l in locs
+            title = _strip_html(d.get("post_title", ""))
+            permalink = d.get("permalink", "")
+            posted_raw = d.get("post_date", "")  # 'YYYY-MM-DD HH:MM:SS'
+            desc_html = d.get("post_content", "") or d.get("post_content_filtered", "")
+            desc = _strip_html(desc_html)
+
+            # Extract location from rendered markup HTML (most reliable)
+            location = ""
+            if markup:
+                loc_match = re.search(
+                    r'Location[^<]*</[^>]+>\s*([^<]{3,100})', markup
                 )
-            else:
-                location = str(locs)
+                if loc_match:
+                    location = re.sub(r'[:\s]+', ' ', loc_match.group(1)).strip()
+                else:
+                    # Fallback: look for city/state pattern
+                    loc_match2 = re.search(
+                        r'([A-Z][a-z]+(?:,\s*[A-Z]{2})?(?:,\s*[A-Z]{2})?)',
+                        markup
+                    )
+                    if loc_match2:
+                        location = loc_match2.group(1).strip()
 
-            desc = _strip_html(j.get('description', '') or j.get('jobSummary', ''))
-            posted_raw = j.get('postedDate', '') or j.get('postDate', '')
+            # Department from research areas in markup
+            dept = ""
+            area_match = re.search(
+                r'Research Area[^<]*</[^>]+>\s*([^<]{3,200})', markup
+            )
+            if area_match:
+                dept = re.sub(r'[:\s]+', ' ', area_match.group(1)).strip()
+
+            # Parse posted date
+            posted_at = ""
+            if posted_raw:
+                try:
+                    from datetime import datetime, timezone
+                    dt = datetime.strptime(posted_raw, "%Y-%m-%d %H:%M:%S")
+                    posted_at = dt.replace(tzinfo=timezone.utc).isoformat()
+                except ValueError:
+                    posted_at = posted_raw
+
+            if not title or not permalink:
+                continue
 
             jobs_out.append({
-                'company': 'microsoft',
-                'ats': 'microsoft',
-                'title': j.get('title', '') or j.get('jobTitle', ''),
-                'location': location,
-                'url': job_url,
-                'posted_at': _parse_iso(posted_raw),
-                'department': j.get('category', '') or j.get('discipline', ''),
-                'description_snippet': desc[:500],
-                'description_full': desc,
+                "company": "microsoft",
+                "ats": "microsoft",
+                "title": title,
+                "location": location,
+                "url": permalink,
+                "posted_at": posted_at,
+                "department": dept,
+                "description_snippet": desc[:500],
+                "description_full": desc,
             })
 
-        if len(jobs) < PAGE_SIZE:
+        if len(posts) < PAGE_SIZE:
             break
 
     return jobs_out
