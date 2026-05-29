@@ -13,12 +13,28 @@ _US_STATE_RE = re.compile(
 )
 
 # How recent must a posting be to count as "fresh"?
-FRESHNESS_HOURS = 48
+# Set to 168h (7 days) so jobs from Google, Amazon, Apple, Microsoft etc.
+# that stay open for weeks are not filtered out immediately.
+FRESHNESS_HOURS = 168
 
 # Inclusion keywords: a job title must contain at least one of these (case-insensitive)
 SWE_KEYWORDS = [
+    # Core software engineering
     "software engineer",
     "software developer",
+    "software development engineer",
+    "sde",
+    "sde i",
+    "sde ii",
+    "sde iii",
+    "engineer i",
+    "engineer ii",
+    "engineer iii",
+    "engineer iv",
+    "engineer v",
+    "programmer",
+    "developer",
+    # Specializations
     "backend engineer",
     "back-end engineer",
     "back end engineer",
@@ -33,24 +49,50 @@ SWE_KEYWORDS = [
     "infra engineer",
     "distributed systems",
     "systems engineer",
+    "systems software",
     "site reliability",
     "sre",
     "devops engineer",
     "cloud engineer",
     "data engineer",
+    "analytics engineer",
+    # ML / AI
     "ml engineer",
     "machine learning engineer",
     "ai engineer",
     "applied scientist",
     "research engineer",
+    "research scientist",
+    "data scientist",
+    # Security
     "security engineer",
     "iam engineer",
     "identity engineer",
+    "application security",
+    "appsec engineer",
+    "cybersecurity engineer",
+    "network engineer",
+    # Developer tooling / productivity
     "api engineer",
     "developer experience",
     "developer productivity",
     "build engineer",
     "release engineer",
+    "staff engineer",
+    "principal engineer",
+    # Mobile
+    "ios engineer",
+    "android engineer",
+    "mobile engineer",
+    "mobile developer",
+    # Embedded / systems
+    "embedded engineer",
+    "embedded software",
+    "robotics engineer",
+    "computer vision engineer",
+    # Other common titles
+    "technical lead",
+    "tech lead",
 ]
 
 # Exclusion keywords: skip if title contains any of these
