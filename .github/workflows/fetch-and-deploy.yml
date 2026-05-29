@@ -85,24 +85,16 @@ jobs:
           # Check if custom ATS entries (google/amazon/apple/microsoft) are present
           MISSING_CUSTOM=false
           if [ -f companies.json ]; then
-            python3 -c "
-import json, sys
-data = json.load(open('companies.json'))
-slugs = {c.get('slug','') for c in data}
-missing = [s for s in ['google','amazon','apple','microsoft'] if s not in slugs]
-if missing:
-    print('Missing custom ATS entries: ' + ', '.join(missing))
-    sys.exit(1)
-" 2>&1 || MISSING_CUSTOM=true
+            python3 check_custom_ats.py 2>&1 || MISSING_CUSTOM=true
           fi
           if [ ! -f companies.json ]; then
-            echo "No companies.json — running bootstrap (first run)..."
+            echo "No companies.json -- running bootstrap (first run)..."
             python bootstrap.py
           elif [ "$MISSING_CUSTOM" = "true" ]; then
-            echo "Custom ATS entries missing — running bootstrap to add them..."
+            echo "Custom ATS entries missing -- running bootstrap to add them..."
             python bootstrap.py
           elif [ "$DAY" = "7" ]; then
-            echo "Sunday — running weekly bootstrap refresh to discover new companies..."
+            echo "Sunday -- running weekly bootstrap refresh to discover new companies..."
             python bootstrap.py
           else
             echo "companies.json exists ($(wc -c < companies.json) bytes), skipping bootstrap (not Sunday)."
