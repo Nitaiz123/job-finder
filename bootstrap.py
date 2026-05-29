@@ -82,7 +82,7 @@ ATS_PATTERNS = {
 # Hand-collected from public career pages; safe to extend.
 CURATED_SEED = {
     "greenhouse": [
-        "airbnb", "stripe", "doordash", "instacart", "robinhood", "coinbase", "discord",
+        "airbnb", "stripe", "doordash", "instacart", "robinhood", "coinbase", "discord", "dropbox",
         "figma", "notion", "linear", "vercel", "openai", "anthropic", "scale", "rippling",
         "ramp", "brex", "mercury", "plaid", "checkr", "cloudflare", "datadog", "elastic",
         "mongodb", "hashicorp", "pagerduty", "twilio", "okta", "snyk", "auth0", "github",
