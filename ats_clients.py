@@ -608,3 +608,138 @@ def fetch_careerpuck(slug):
 
 
 FETCHERS["careerpuck"] = fetch_careerpuck
+
+
+def fetch_smartrecruiters(slug):
+    """
+    SmartRecruiters public job search API.
+
+    Endpoint:
+      GET https://api.smartrecruiters.com/v1/companies/{slug}/postings
+    Fully documented, no auth required for public postings.
+    """
+    url = f"https://api.smartrecruiters.com/v1/companies/{slug}/postings"
+    params = {"limit": 100, "offset": 0}
+    jobs_out = []
+
+    for page in range(5):  # up to 500 jobs
+        params["offset"] = page * 100
+        try:
+            r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
+            if r.status_code != 200:
+                break
+            data = r.json()
+        except (requests.RequestException, ValueError):
+            break
+
+        postings = data.get("content", [])
+        if not postings:
+            break
+
+        for j in postings:
+            loc = j.get("location", {}) or {}
+            location_parts = [loc.get("city", ""), loc.get("region", ""), loc.get("country", "")]
+            location_str = ", ".join(p for p in location_parts if p)
+            if j.get("location", {}).get("remote"):
+                location_str = ("Remote, " + location_str).strip(", ")
+
+            job_id = j.get("id", "")
+            job_url = f"https://jobs.smartrecruiters.com/{slug}/{job_id}" if job_id else ""
+
+            jobs_out.append({
+                "company": slug,
+                "ats": "smartrecruiters",
+                "title": j.get("name", ""),
+                "location": location_str,
+                "url": job_url,
+                "posted_at": _parse_iso(j.get("releasedDate") or j.get("updatedOn")),
+                "department": (j.get("department") or {}).get("label", ""),
+                "description_snippet": "",
+                "description_full": "",
+            })
+
+        if len(postings) < 100:
+            break
+
+    return jobs_out
+
+
+def fetch_jobvite(slug):
+    """
+    Jobvite public job feed API.
+
+    Endpoint:
+      GET https://jobs.jobvite.com/api/company/{slug}/jobs
+    Returns JSON array of all open jobs.
+    """
+    url = f"https://jobs.jobvite.com/api/company/{slug}/jobs"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+    except (requests.RequestException, ValueError):
+        return []
+
+    jobs_out = []
+    for j in data.get("jobs", []) if isinstance(data, dict) else (data if isinstance(data, list) else []):
+        desc = _strip_html(j.get("description", ""))
+        jobs_out.append({
+            "company": slug,
+            "ats": "jobvite",
+            "title": j.get("title", ""),
+            "location": j.get("location", ""),
+            "url": j.get("applyUrl") or j.get("url", ""),
+            "posted_at": _parse_iso(j.get("date") or j.get("datePosted")),
+            "department": j.get("category", "") or j.get("department", ""),
+            "description_snippet": desc[:500],
+            "description_full": desc,
+        })
+    return jobs_out
+
+
+def fetch_rippling(slug):
+    """
+    Rippling public job board API.
+
+    Endpoint:
+      GET https://ats.rippling.com/api/v1/job_postings?company={slug}
+    """
+    url = f"https://ats.rippling.com/api/v1/job_postings"
+    params = {"company": slug, "status": "PUBLISHED"}
+    try:
+        r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+    except (requests.RequestException, ValueError):
+        return []
+
+    jobs_out = []
+    postings = data if isinstance(data, list) else data.get("results", data.get("jobs", []))
+    for j in postings:
+        desc = _strip_html(j.get("description", "") or j.get("jobDescription", ""))
+        job_id = j.get("id", "") or j.get("jobId", "")
+        job_url = j.get("jobUrl") or j.get("applyUrl") or (
+            f"https://ats.rippling.com/{slug}/jobs/{job_id}" if job_id else ""
+        )
+        loc = j.get("location", "") or j.get("locationName", "")
+        if isinstance(loc, dict):
+            loc = ", ".join(p for p in [loc.get("city", ""), loc.get("state", ""), loc.get("country", "")] if p)
+        jobs_out.append({
+            "company": slug,
+            "ats": "rippling",
+            "title": j.get("title", "") or j.get("jobTitle", ""),
+            "location": str(loc),
+            "url": job_url,
+            "posted_at": _parse_iso(j.get("publishedAt") or j.get("createdAt")),
+            "department": j.get("department", "") or "",
+            "description_snippet": desc[:500],
+            "description_full": desc,
+        })
+    return jobs_out
+
+
+FETCHERS["smartrecruiters"] = fetch_smartrecruiters
+FETCHERS["jobvite"] = fetch_jobvite
+FETCHERS["rippling"] = fetch_rippling

@@ -50,23 +50,39 @@ CANDIDATES_PATH = ROOT / "discovery_candidates.json"  # pending, unvalidated
 # Additional public repos that list companies with ATS application links.
 # These complement the Simplify repos already used in bootstrap.py.
 EXTRA_SOURCE_URLS = [
+    # Simplify repos — primary source
     "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
     "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
+    # Community job-tracking repos
     "https://raw.githubusercontent.com/speedyapply/2025-AI-College-Jobs/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Jobs/main/README.md",
     "https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/ReaVNaiL/New-Grad-2024/main/README.md",
+    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
+    "https://raw.githubusercontent.com/coderQuad/New-Grad-Positions-2023/master/README.md",
+    "https://raw.githubusercontent.com/Ouckah/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/cvrve/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/alenachao/New-Grad-2025/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Backend-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-ML-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Internship/main/README.md",
 ]
 
 ATS_PATTERNS = {
     "greenhouse": [
         re.compile(r"boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
         re.compile(r"job-boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"boards\.eu\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
     ],
     "lever": [
         re.compile(r"jobs\.lever\.co/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
     ],
     "ashby": [
-        re.compile(r"jobs\.ashbyhq\.com/([a-z0-9][a-z0-9\-\.]*)", re.IGNORECASE),
+        re.compile(r"jobs\.ashbyhq\.com/([a-z0-9][a-z0-9\.\-]*)", re.IGNORECASE),
+        re.compile(r"ashbyhq\.com/([a-z0-9][a-z0-9\.\-]*)", re.IGNORECASE),
     ],
     "workable": [
         re.compile(r"apply\.workable\.com/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
@@ -76,6 +92,20 @@ ATS_PATTERNS = {
     ],
     "icims": [
         re.compile(r"careers-([a-z0-9][a-z0-9\-]*)\.icims\.com", re.IGNORECASE),
+        re.compile(r"(?<![a-z\-])([a-z0-9][a-z0-9\-]+)\.icims\.com", re.IGNORECASE),
+    ],
+    # New ATSes with clean public APIs
+    "smartrecruiters": [
+        re.compile(r"jobs\.smartrecruiters\.com/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"smartrecruiters\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
+    ],
+    "jobvite": [
+        re.compile(r"jobs\.jobvite\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
+        re.compile(r"jobs\.jobvite\.com/careers/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+    ],
+    "rippling": [
+        re.compile(r"ats\.rippling\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
+        re.compile(r"rippling\.com/job-board/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
     ],
     # Workday intentionally excluded from discovery: its compound tenant|host|site
     # slug can't be reliably inferred from a URL alone without verification.

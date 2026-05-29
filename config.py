@@ -285,11 +285,11 @@ USER_AGENT = "fresh-swe-jobs-finder/1.0 (personal job search tool)"
 # ---------------------------------------------------------------------------
 # "conservative": validate every candidate before adding; cap validations/run.
 # "aggressive":   add candidates faster, higher validation cap.
-DISCOVERY_MODE = "conservative"
+DISCOVERY_MODE = "aggressive"
 
 # A board (discovered or from a repo) is pruned after this many consecutive
 # runs returning zero jobs. Curated seeds are never auto-pruned.
-DISCOVERY_MAX_MISS_STREAK = 5
+DISCOVERY_MAX_MISS_STREAK = 8
 
 # Run discovery automatically as part of run.py? If False, run `python discover.py`
 # manually. Discovery adds ~30-90s to a run depending on harvest size.

@@ -76,14 +76,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Bootstrap company list (only if missing)
-        # Bootstrap is idempotent and merges; safe to skip when state restored.
+      - name: Bootstrap company list (first run or weekly refresh)
+        # Bootstrap is idempotent and merges; safe to run anytime.
+        # Run on first launch (no companies.json) OR every Sunday to pick up
+        # new companies added to Simplify repos and other sources.
         run: |
+          DAY=$(date -u +%u)  # 1=Mon ... 7=Sun
           if [ ! -f companies.json ]; then
-            echo "No companies.json — running bootstrap..."
+            echo "No companies.json — running bootstrap (first run)..."
+            python bootstrap.py
+          elif [ "$DAY" = "7" ]; then
+            echo "Sunday — running weekly bootstrap refresh to discover new companies..."
             python bootstrap.py
           else
-            echo "companies.json exists ($(wc -c < companies.json) bytes), skipping bootstrap."
+            echo "companies.json exists ($(wc -c < companies.json) bytes), skipping bootstrap (not Sunday)."
           fi
 
       - name: Fetch jobs, run discovery, rebuild dashboard
