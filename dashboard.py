@@ -491,7 +491,12 @@ function render() {{
     // Age filter uses first_seen_at (when we first discovered the job)
     const seenIso = j.first_seen_at || j.posted_at;
     const h = ageHours(seenIso);
-    if (h !== null && h > maxAge) return false;
+    // If date is missing and filter is not "All time", exclude the job
+    if (maxAge < 999999) {{
+      if (h === null || h > maxAge) return false;
+    }} else {{
+      if (h !== null && h > maxAge) return false;
+    }}
     return true;
   }});
 
@@ -571,7 +576,7 @@ document.getElementById("locFilter").addEventListener("input", render);
 document.getElementById("regionFilter").addEventListener("change", render);
 document.getElementById("expFilter").addEventListener("change", render);
 document.getElementById("hideSponsor").addEventListener("change", render);
-document.getElementById("ageFilter").addEventListener("input", render);
+document.getElementById("ageFilter").addEventListener("change", render);
 
 document.querySelectorAll("th[data-sort]").forEach(th => {{
   th.addEventListener("click", () => {{
