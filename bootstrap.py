@@ -183,11 +183,44 @@ CURATED_SEED = {
         "marqeta",       # Marqeta - 39 jobs
         "modernhealth",  # Modern Health - 12 jobs
         "masterclass",   # MasterClass - 4 jobs
+        # --- Media, News & Entertainment companies (verified) ---
+        # News & Media
+        "thenewyorktimes",  # The New York Times - 177 jobs
+        "axios",            # Axios - 24 jobs
+        "voxmedia",         # Vox Media - 17 jobs
+        "forbes",           # Forbes - 19 jobs
+        "insider",          # Business Insider - 11 jobs
+        "propublica",       # ProPublica - 4 jobs
+        "buzzfeed",         # BuzzFeed - 7 jobs
+        "rumble",           # Rumble - 16 jobs
+        "abc",              # ABC News - 24 jobs
+        "fox",              # Fox Corporation - 7 jobs
+        # Entertainment & Streaming
+        "a24",              # A24 Films - 8 jobs
+        "twitch",           # Twitch (Amazon) - 58 jobs
+        "crunchyroll",      # Crunchyroll - 65 jobs
+        # Sports & Gaming
+        "fanduel",          # FanDuel - 126 jobs
+        "barstoolsports",   # Barstool Sports - 2 jobs
+        # Gaming
+        "riotgames",        # Riot Games (LoL, Valorant) - 186 jobs
+        "scopely",          # Scopely - 198 jobs
+        "2k",               # 2K Games - 109 jobs
+        "rockstargames",    # Rockstar Games (GTA) - 84 jobs
+        "taketwo",          # Take-Two Interactive - 32 jobs
+        "naughtydog",       # Naughty Dog (PlayStation) - 10 jobs
+        "insomniac",        # Insomniac Games (Spider-Man) - 3 jobs
+        "bungie",           # Bungie (Destiny) - 1 job
     ],
     "lever": [
         # --- Verified Lever companies ---
         "palantir",      # Palantir - 5 jobs (verified)
         "linkedin",      # LinkedIn - 16 jobs (verified)
+        # --- Media & Entertainment on Lever ---
+        "spotify",       # Spotify - 183 jobs
+        "theathletic",   # The Athletic (NYT) - 15 jobs
+        "wmg",           # Warner Music Group - 23 jobs
+        "slate",         # Slate Magazine - 4 jobs
         # --- Core Lever companies ---
         "netflix", "spotify", "kpler", "ramp", "attentive", "blend", "carta", "checkr",
         "clearbit", "color", "convoy", "cruise", "crunchbase", "discord", "doordash",
@@ -240,6 +273,9 @@ CURATED_SEED = {
         # --- Additional verified Ashby companies ---
         "cursor",        # Cursor AI - 86 jobs
         "perplexity",    # Perplexity AI - 60 jobs
+        # --- Media on Ashby ---
+        "slate",         # Slate Magazine - 7 jobs
+        "take2",         # Take-Two Interactive - 5 jobs
     ],
     "workable": [
         "doctolib", "klarna", "back-market", "alan", "swile",
@@ -362,6 +398,7 @@ CURATED_SEED = {
         "lyft|wd5|lyft",
         "snapchat|wd1|snap",  # Snap Inc. uses Workday with tenant=snapchat, board=snap
         # --- Additional verified Workday companies ---
+        "nytimes|wd5|NYT",           # New York Times - Workday board
         "sec|wd3|Samsung_Careers",   # Samsung Electronics - 128 jobs
         "qualcomm|wd12|External",    # Qualcomm - verified endpoint
         "twitter|wd5|X",             # Twitter/X - verified endpoint
@@ -646,6 +683,7 @@ CURATED_SEED = {
     "smartrecruiters": [
         # --- Verified SmartRecruiters companies ---
         "servicenow",    # ServiceNow - 95 jobs (verified)
+        "sportradar",    # Sportradar - 22 jobs (verified)
         # --- Other SmartRecruiters companies ---
         "Bosch", "IKEA", "LinkedIn", "Visa", "Zalando", "Delivery-Hero",
         "HelloFresh", "Trivago", "Klarna", "Adyen", "Booking", "Philips",
