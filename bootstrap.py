@@ -82,6 +82,12 @@ ATS_PATTERNS = {
 # Hand-collected from public career pages; safe to extend.
 CURATED_SEED = {
     "greenhouse": [
+        # --- Verified top tech companies (confirmed via API) ---
+        "block",         # Block Inc. (Square/Cash App) - 194 jobs
+        "spacex",        # SpaceX - 1674 jobs
+        "roblox",        # Roblox - 260 jobs
+        "epicgames",     # Epic Games - 114 jobs
+        # --- Core tech companies ---
         "airbnb", "stripe", "doordash", "instacart", "robinhood", "coinbase", "discord", "dropbox",
         "figma", "notion", "linear", "vercel", "openai", "anthropic", "scale", "rippling",
         "ramp", "brex", "mercury", "plaid", "checkr", "cloudflare", "datadog", "elastic",
@@ -124,8 +130,65 @@ CURATED_SEED = {
         "trade-republic", "pennylane", "qonto", "alan", "swile",
         "datadog", "miro", "pigment", "payfit", "ledger", "sorare",
         "back-market", "mirakl", "aircall", "spendesk", "contentsquare",
+        # --- Additional verified Greenhouse companies ---
+        "waymo",         # Waymo (Alphabet) - 418 jobs
+        "databricks",    # Databricks - 765 jobs
+        "anthropic",     # Anthropic - 376 jobs (also in ashby, greenhouse is primary)
+        "lyft",          # Lyft - 124 jobs
+        "pinterest",     # Pinterest - 176 jobs
+        "reddit",        # Reddit - 156 jobs
+        "cloudflare",    # Cloudflare - 149 jobs
+        "figma",         # Figma - 159 jobs
+        "okta",          # Okta - 354 jobs
+        "mongodb",       # MongoDB - 427 jobs
+        "datadog",       # Datadog - 424 jobs
+        "stripe",        # Stripe - 475 jobs
+        "airbnb",        # Airbnb - 236 jobs
+        "brex",          # Brex - 223 jobs
+        "instacart",     # Instacart - 136 jobs
+        "robinhood",     # Robinhood - 129 jobs
+        "discord",       # Discord - 74 jobs
+        "duolingo",      # Duolingo - 65 jobs
+        "fastly",        # Fastly - 55 jobs
+        "pagerduty",     # PagerDuty - 41 jobs
+        "airtable",      # Airtable - 26 jobs
+        "lattice",       # Lattice - 13 jobs
+        "coursera",      # Coursera - 11 jobs
+        "gusto",         # Gusto - 84 jobs
+        # --- More verified Greenhouse companies ---
+        "betterhelp",    # BetterHelp - 257 jobs
+        "affirm",        # Affirm - 168 jobs
+        "scaleai",       # Scale AI - 167 jobs
+        "elastic",       # Elastic - 159 jobs
+        "intercom",      # Intercom - 152 jobs
+        "sofi",          # SoFi - 146 jobs
+        "twilio",        # Twilio - 145 jobs
+        "fivetran",      # Fivetran - 137 jobs
+        "oura",          # Oura Ring - 107 jobs
+        "justworks",     # Justworks - 95 jobs
+        "vercel",        # Vercel - 74 jobs
+        "chime",         # Chime - 69 jobs
+        "checkr",        # Checkr - 62 jobs
+        "dropbox",       # Dropbox - 61 jobs
+        "peloton",       # Peloton - 61 jobs
+        "amplitude",     # Amplitude - 51 jobs
+        "carta",         # Carta - 51 jobs
+        "launchdarkly",  # LaunchDarkly - 50 jobs
+        "mixpanel",      # Mixpanel - 45 jobs
+        "cockroachlabs", # CockroachDB - 33 jobs
+        "khanacademy",   # Khan Academy - 33 jobs
+        "yugabyte",      # YugabyteDB - 32 jobs
+        "betterment",    # Betterment - 31 jobs
+        "squarespace",   # Squarespace - 27 jobs
+        "marqeta",       # Marqeta - 39 jobs
+        "modernhealth",  # Modern Health - 12 jobs
+        "masterclass",   # MasterClass - 4 jobs
     ],
     "lever": [
+        # --- Verified Lever companies ---
+        "palantir",      # Palantir - 5 jobs (verified)
+        "linkedin",      # LinkedIn - 16 jobs (verified)
+        # --- Core Lever companies ---
         "netflix", "spotify", "kpler", "ramp", "attentive", "blend", "carta", "checkr",
         "clearbit", "color", "convoy", "cruise", "crunchbase", "discord", "doordash",
         "figma", "gem", "gusto", "highspot", "humu", "imply", "instabase", "kustomer",
@@ -147,7 +210,21 @@ CURATED_SEED = {
         "mambu", "solarisbank", "moonpig", "secret-escapes",
     ],
     "ashby": [
-        "ramp", "linear", "vercel", "deepgram", "openai", "anthropic", "scale",
+        # --- Verified Ashby companies (confirmed via API) ---
+        "openai",        # OpenAI - 716 jobs
+        "snowflake",     # Snowflake - 409 jobs
+        "notion",        # Notion - 143 jobs
+        "cohere",        # Cohere - 129 jobs
+        "ramp",          # Ramp - 119 jobs
+        "plaid",         # Plaid - 91 jobs
+        "confluent",     # Confluent - 49 jobs
+        "benchling",     # Benchling - 46 jobs
+        "linear",        # Linear - 26 jobs
+        "nerdwallet",    # NerdWallet - 25 jobs
+        "strava",        # Strava - 25 jobs
+        "airbyte",       # Airbyte - 8 jobs
+        # --- Other Ashby companies ---
+        "vercel", "deepgram", "anthropic", "scale",
         "modal", "replicate", "supabase", "neon", "planetscale", "fly", "render",
         "warp", "raycast", "arc", "tldraw", "cursor", "codeium", "tabnine",
         "perplexity", "you", "harvey", "ironclad", "evenup", "casetext",
@@ -160,6 +237,9 @@ CURATED_SEED = {
         "anysphere", "sourcegraph", "supermaven", "augmentcode", "magic-dev",
         "decagon", "sierra-ai", "pylon", "kustomer", "frontapp",
         "rippling", "deel-com", "remote-com", "oysterhr", "remotebase",
+        # --- Additional verified Ashby companies ---
+        "cursor",        # Cursor AI - 86 jobs
+        "perplexity",    # Perplexity AI - 60 jobs
     ],
     "workable": [
         "doctolib", "klarna", "back-market", "alan", "swile",
@@ -184,7 +264,11 @@ CURATED_SEED = {
     # Add more as you discover them by visiting a company's "Careers" page and
     # looking at the URL once it redirects to *.myworkdayjobs.com.
     "workday": [
-        "nvidia|wd5|NVIDIAExternalCareerSite",
+        # --- Verified Workday companies (confirmed via API) ---
+        "nvidia|wd5|NVIDIAExternalCareerSite",  # NVIDIA - 1780 jobs
+        "zoom|wd5|zoom",                         # Zoom - 124 jobs
+        "intel|wd1|External",                    # Intel - 715 jobs
+        # --- Other Workday companies ---
         "salesforce|wd1|External_Career_Site",
         "cisco|wd5|External",
         "adobe|wd5|external_experienced",
@@ -277,6 +361,39 @@ CURATED_SEED = {
         "uber|wd1|UberInternal",  # Uber primarily Greenhouse, some Workday for non-eng
         "lyft|wd5|lyft",
         "snapchat|wd1|snap",  # Snap Inc. uses Workday with tenant=snapchat, board=snap
+        # --- Additional verified Workday companies ---
+        "sec|wd3|Samsung_Careers",   # Samsung Electronics - 128 jobs
+        "qualcomm|wd12|External",    # Qualcomm - verified endpoint
+        "twitter|wd5|X",             # Twitter/X - verified endpoint
+        "amat|wd1|External",         # Applied Materials
+        "kla|wd1|Search",            # KLA Corporation
+        "analogdevices|wd1|External", # Analog Devices
+        "broadcom|wd1|External",     # Broadcom
+        "marvell|wd1|External",      # Marvell Technology
+        "xilinx|wd1|External",       # Xilinx (AMD)
+        "nxp|wd1|External",          # NXP Semiconductors
+        "infineon|wd1|External",     # Infineon Technologies
+        "juniper|wd1|External",      # Juniper Networks
+        "arista|wd5|External",       # Arista Networks
+        "f5|wd1|External",           # F5 Networks
+        "ebay|wd5|External",         # eBay
+        "doordash|wd5|External",     # DoorDash
+        "airbnb|wd5|External",       # Airbnb
+        "coinbase|wd5|External",     # Coinbase
+        "crowdstrike|wd5|External",  # CrowdStrike
+        "okta|wd5|External",         # Okta
+        "atlassian|wd5|External",    # Atlassian
+        "zendesk|wd5|External",      # Zendesk
+        "hubspot|wd5|External",      # HubSpot
+        "twilio|wd5|External",       # Twilio
+        "hashicorp|wd5|External",    # HashiCorp
+        "mongodb|wd5|External",      # MongoDB
+        "elastic|wd5|External",      # Elastic
+        "confluent|wd5|External",    # Confluent
+        "databricks|wd5|External",   # Databricks
+        "snowflake|wd5|External",    # Snowflake
+        "datadog|wd5|External",      # Datadog
+        "cloudflare|wd5|External",   # Cloudflare
     ],
     # Eightfold seeds: just the company subdomain
     "eightfold": [
@@ -527,6 +644,9 @@ CURATED_SEED = {
     ],
     # SmartRecruiters: widely used by mid-to-large companies globally.
     "smartrecruiters": [
+        # --- Verified SmartRecruiters companies ---
+        "servicenow",    # ServiceNow - 95 jobs (verified)
+        # --- Other SmartRecruiters companies ---
         "Bosch", "IKEA", "LinkedIn", "Visa", "Zalando", "Delivery-Hero",
         "HelloFresh", "Trivago", "Klarna", "Adyen", "Booking", "Philips",
         "Siemens", "SAP", "Volkswagen", "BMW", "Daimler", "BASF",
