@@ -276,6 +276,7 @@ CURATED_SEED = {
         "lucidmotors|wd1|Lucid_Careers",
         "uber|wd1|UberInternal",  # Uber primarily Greenhouse, some Workday for non-eng
         "lyft|wd5|lyft",
+        "snapchat|wd1|snap",  # Snap Inc. uses Workday with tenant=snapchat, board=snap
     ],
     # Eightfold seeds: just the company subdomain
     "eightfold": [

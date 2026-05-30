@@ -12,6 +12,7 @@ CUSTOM_ATS = {
     "amazon": "amazon",
     "apple": "apple",
     "microsoft": "microsoft",
+    "snapchat|wd1|snap": "workday",
 }
 
 try:
