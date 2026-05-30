@@ -329,6 +329,53 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     letter-spacing: 0.04em;
     vertical-align: middle;
   }}
+  /* Tabs */
+  .tabs {{
+    max-width: 1600px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--border);
+  }}
+  .tab-btn {{
+    padding: 8px 20px;
+    font-size: 14px;
+    font-family: inherit;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }}
+  .tab-btn:hover {{ color: var(--ink); }}
+  .tab-btn.active {{ color: var(--accent); border-bottom-color: var(--accent); }}
+  .tab-badge {{
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 6px;
+    margin-left: 5px;
+    vertical-align: middle;
+  }}
+  .btn-save {{ color: #888; }}
+  .btn-save.saved {{ color: #c8553d; border-color: #c8553d; background: #faf0ed; }}
+  #savedPanel {{ display: none; }}
+  #savedPanel.active {{ display: block; }}
+  #allPanel.hidden {{ display: none; }}
+  .saved-empty {{
+    padding: 60px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }}
 </style>
 </head>
 <body>
@@ -400,6 +447,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
   </div>
 </header>
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" id="tabAll" onclick="switchTab('all')">All Jobs</button>
+  <button class="tab-btn" id="tabSaved" onclick="switchTab('saved')">Saved Jobs <span class="tab-badge" id="savedBadge">0</span></button>
+</div>
+<div id="allPanel">
 <div class="toggle-row">
   <input type="checkbox" id="hideSponsor">
   <label for="hideSponsor">Hide roles needing visa sponsorship (EU / UK / Canada) — you're on STEM OPT</label>
@@ -422,6 +475,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <tbody id="jobsBody"></tbody>
   </table>
   <div id="empty" class="empty" style="display:none">No jobs match your filters.</div>
+</div>
+</div><!-- end allPanel -->
+<!-- Saved Jobs Panel -->
+<div id="savedPanel">
+  <div class="container">
+    <div id="savedEmpty" class="saved-empty" style="display:none">No saved jobs yet. Click the &#9825; Save button on any job to bookmark it.</div>
+    <table id="savedTable" style="display:none; width:100%; background:var(--panel); border:1px solid var(--border); border-radius:8px; border-collapse:separate; border-spacing:0; overflow:hidden;">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Title</th>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Company</th>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Location</th>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Level</th>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Posted</th>
+          <th style="text-align:left;padding:12px 14px;background:#f5f5f0;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="savedBody"></tbody>
+    </table>
+  </div>
 </div>
 
 <div class="modal-overlay" id="jdModal">
@@ -448,6 +521,90 @@ const NOW = new Date();
 
 let sortKey = "posted_at";
 let sortDir = "desc";
+
+// ---- Saved Jobs (localStorage) ----
+const SAVED_KEY = "swe_saved_jobs";
+function getSaved() {{
+  try {{ return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); }}
+  catch(e) {{ return []; }}
+}}
+function setSaved(arr) {{
+  localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
+}}
+function isSaved(job) {{
+  return getSaved().includes(job.url);
+}}
+function toggleSave(job) {{
+  let saved = getSaved();
+  if (saved.includes(job.url)) {{
+    saved = saved.filter(u => u !== job.url);
+    showToast("Removed from saved jobs");
+  }} else {{
+    saved.push(job.url);
+    showToast("\u2665 Job saved! View in Saved Jobs tab");
+  }}
+  setSaved(saved);
+  updateSavedBadge();
+  render();
+  renderSaved();
+}}
+function updateSavedBadge() {{
+  const count = getSaved().length;
+  document.getElementById("savedBadge").textContent = count;
+}}
+
+let currentTab = "all";
+function switchTab(tab) {{
+  currentTab = tab;
+  document.getElementById("tabAll").classList.toggle("active", tab === "all");
+  document.getElementById("tabSaved").classList.toggle("active", tab === "saved");
+  document.getElementById("allPanel").classList.toggle("hidden", tab !== "all");
+  document.getElementById("savedPanel").classList.toggle("active", tab === "saved");
+  if (tab === "saved") renderSaved();
+}}
+
+function renderSaved() {{
+  const saved = getSaved();
+  const savedJobs = JOBS.filter(j => saved.includes(j.url));
+  const body = document.getElementById("savedBody");
+  const tbl = document.getElementById("savedTable");
+  const empty = document.getElementById("savedEmpty");
+  body.innerHTML = "";
+  if (savedJobs.length === 0) {{
+    tbl.style.display = "none";
+    empty.style.display = "block";
+  }} else {{
+    tbl.style.display = "";
+    empty.style.display = "none";
+    for (const j of savedJobs) {{
+      const tr = document.createElement("tr");
+      const h = ageHours(j.posted_at);
+      const ageClass = (h !== null && h < 24) ? "age age-recent" : "age";
+      const expLevel = j.exp_level || "Unspecified";
+      const expClass = {{
+        "0-2 years": "exp-0-2",
+        "3-5 years": "exp-3-5",
+        "5+ years":  "exp-5plus",
+      }}[expLevel] || "exp-unspecified";
+      const idx = JOBS.indexOf(j);
+      const hasJD = j.description_full && j.description_full.trim().length > 0;
+      const actions = (hasJD
+        ? `<button class="btn btn-copy" data-idx="${{idx}}">Copy JD</button>` +
+          `<button class="btn btn-view" data-idx="${{idx}}">View</button>`
+        : `<span class="age">no JD</span>`) +
+        `<button class="btn btn-save saved" data-idx="${{idx}}" title="Remove from saved">&#9829; Saved</button>`;
+      tr.innerHTML = `
+        <td><a class="title-link" href="${{j.url}}" target="_blank" rel="noopener">${{j.title}}</a></td>
+        <td class="company">${{j.company}}</td>
+        <td>${{j.location || "—"}}</td>
+        <td><span class="exp-badge ${{expClass}}">${{expLevel}}</span></td>
+        <td class="${{ageClass}}">${{formatAge(j.posted_at)}}</td>
+        <td class="actions">${{actions}}</td>
+      `;
+      body.appendChild(tr);
+    }}
+  }}
+}}
 
 function ageHours(iso) {{
   if (!iso) return null;
@@ -536,10 +693,13 @@ function render() {{
         : "";
       const hasJD = j.description_full && j.description_full.trim().length > 0;
       const idx = JOBS.indexOf(j);
-      const actions = hasJD
+      const saveLabel = isSaved(j) ? "&#9829; Saved" : "&#9825; Save";
+      const saveClass = isSaved(j) ? "btn btn-save saved" : "btn btn-save";
+      const saveBtn = `<button class="${{saveClass}}" data-idx="${{idx}}" title="Save to apply later">${{saveLabel}}</button>`;
+      const actions = (hasJD
         ? `<button class="btn btn-copy" data-idx="${{idx}}">Copy JD</button>` +
           `<button class="btn btn-view" data-idx="${{idx}}">View</button>`
-        : `<span class="age">no JD</span>`;
+        : `<span class="age">no JD</span>`) + saveBtn;
       const expLevel = j.exp_level || "Unspecified";
       const expClass = {{
         "0-2 years": "exp-0-2",
@@ -636,7 +796,11 @@ let currentModalJob = null;
 document.getElementById("jobsBody").addEventListener("click", (e) => {{
   const copyBtn = e.target.closest(".btn-copy");
   const viewBtn = e.target.closest(".btn-view");
-  if (copyBtn) {{
+  const saveBtn2 = e.target.closest(".btn-save");
+  if (saveBtn2) {{
+    const job = JOBS[parseInt(saveBtn2.dataset.idx, 10)];
+    toggleSave(job);
+  }} else if (copyBtn) {{
     const job = JOBS[parseInt(copyBtn.dataset.idx, 10)];
     copyText(jdText(job)).then(() => {{
       copyBtn.textContent = "Copied!";
@@ -647,6 +811,23 @@ document.getElementById("jobsBody").addEventListener("click", (e) => {{
         copyBtn.classList.remove("btn-copied");
       }}, 1500);
     }}).catch(() => showToast("Copy failed — try the View button"));
+  }} else if (viewBtn) {{
+    const job = JOBS[parseInt(viewBtn.dataset.idx, 10)];
+    openModal(job);
+  }}
+}});
+
+// Saved panel event delegation
+document.getElementById("savedBody").addEventListener("click", (e) => {{
+  const copyBtn = e.target.closest(".btn-copy");
+  const viewBtn = e.target.closest(".btn-view");
+  const saveBtn = e.target.closest(".btn-save");
+  if (saveBtn) {{
+    const job = JOBS[parseInt(saveBtn.dataset.idx, 10)];
+    toggleSave(job);
+  }} else if (copyBtn) {{
+    const job = JOBS[parseInt(copyBtn.dataset.idx, 10)];
+    copyText(jdText(job)).then(() => showToast("Job description copied to clipboard"));
   }} else if (viewBtn) {{
     const job = JOBS[parseInt(viewBtn.dataset.idx, 10)];
     openModal(job);
@@ -681,6 +862,7 @@ document.getElementById("modalCopy").addEventListener("click", () => {{
 }});
 
 render();
+updateSavedBadge();
 </script>
 </body>
 </html>
