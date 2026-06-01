@@ -600,71 +600,151 @@ const NOW = new Date();
 
 let sortKey = "posted_at";
 let sortDir = "desc";
+let currentTab = "all";
 
-// ---- Saved Jobs (localStorage) ----
-const SAVED_KEY = "swe_saved_jobs";
-function getSaved() {{
-  try {{ return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); }}
-  catch(e) {{ return []; }}
+// ---- Persistent storage: GitHub Gist backend + localStorage cache ----
+// Gist stores {{ "saved": [...urls], "applied": {{url: isoDate}} }}
+const GIST_ID = "75130c93201811cdf14d7045089b66e4";
+const GIST_FILE = "job_finder_bookmarks.json";
+const GIST_TOKEN = "__GIST_TOKEN__";
+const LS_CACHE_KEY = "swe_bookmarks_cache";
+
+// In-memory state (loaded from Gist on page load)
+let _saved = [];   // array of URLs
+let _applied = {{}}; // {{url: isoDate}}
+let _gistLoaded = false;
+let _syncTimer = null;
+
+function _readCache() {{
+  try {{ return JSON.parse(localStorage.getItem(LS_CACHE_KEY) || "null"); }}
+  catch(e) {{ return null; }}
 }}
-function setSaved(arr) {{
-  localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
+function _writeCache(data) {{
+  try {{ localStorage.setItem(LS_CACHE_KEY, JSON.stringify(data)); }} catch(e) {{}}
 }}
-function isSaved(job) {{
-  return getSaved().includes(job.url);
+
+async function loadFromGist() {{
+  // First apply localStorage cache immediately so UI is instant
+  const cache = _readCache();
+  if (cache) {{
+    _saved = cache.saved || [];
+    _applied = cache.applied || {{}};
+    _gistLoaded = true;
+    updateSavedBadge();
+    updateAppliedBadge();
+    render();
+    if (currentTab === "saved") renderSaved();
+    if (currentTab === "applied") renderApplied();
+  }}
+  // Then fetch fresh data from Gist (bypasses CDN cache)
+  try {{
+    const resp = await fetch(
+      `https://api.github.com/gists/${{GIST_ID}}`,
+      {{ headers: {{ Authorization: `token ${{GIST_TOKEN}}`, Accept: "application/vnd.github.v3+json" }} }}
+    );
+    if (!resp.ok) throw new Error("Gist fetch failed: " + resp.status);
+    const gist = await resp.json();
+    const content = gist.files[GIST_FILE].content;
+    const data = JSON.parse(content);
+    _saved = data.saved || [];
+    _applied = data.applied || {{}};
+    _gistLoaded = true;
+    _writeCache({{ saved: _saved, applied: _applied }});
+    updateSavedBadge();
+    updateAppliedBadge();
+    render();
+    if (currentTab === "saved") renderSaved();
+    if (currentTab === "applied") renderApplied();
+  }} catch(e) {{
+    console.warn("Gist load failed, using cache:", e);
+    if (!cache) {{
+      // fallback: migrate old localStorage keys if present
+      try {{
+        const oldSaved = JSON.parse(localStorage.getItem("swe_saved_jobs") || "[]");
+        const oldApplied = JSON.parse(localStorage.getItem("swe_applied_jobs") || "{{}}");
+        if (oldSaved.length || Object.keys(oldApplied).length) {{
+          _saved = oldSaved;
+          _applied = oldApplied;
+          _gistLoaded = true;
+          updateSavedBadge();
+          updateAppliedBadge();
+          render();
+        }}
+      }} catch(e2) {{}}
+    }}
+  }}
 }}
+
+async function syncToGist() {{
+  const data = {{ saved: _saved, applied: _applied }};
+  _writeCache(data); // always update cache immediately
+  try {{
+    await fetch(
+      `https://api.github.com/gists/${{GIST_ID}}`,
+      {{
+        method: "PATCH",
+        headers: {{
+          Authorization: `token ${{GIST_TOKEN}}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json"
+        }},
+        body: JSON.stringify({{
+          files: {{ [GIST_FILE]: {{ content: JSON.stringify(data, null, 2) }} }}
+        }})
+      }}
+    );
+  }} catch(e) {{
+    console.warn("Gist sync failed (will retry on next change):", e);
+  }}
+}}
+
+// Debounced sync: batch rapid changes into a single Gist write
+function scheduleSyncToGist() {{
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncToGist, 800);
+}}
+
+// ---- Saved Jobs ----
+function getSaved() {{ return _saved; }}
+function isSaved(job) {{ return _saved.includes(job.url); }}
 function toggleSave(job) {{
-  let saved = getSaved();
-  if (saved.includes(job.url)) {{
-    saved = saved.filter(u => u !== job.url);
+  if (_saved.includes(job.url)) {{
+    _saved = _saved.filter(u => u !== job.url);
     showToast("Removed from saved jobs");
   }} else {{
-    saved.push(job.url);
-    showToast("\u2665 Job saved! View in Saved Jobs tab");
+    _saved.push(job.url);
+    showToast("\u2665 Job saved!");
   }}
-  setSaved(saved);
+  scheduleSyncToGist();
   updateSavedBadge();
   render();
   renderSaved();
 }}
 function updateSavedBadge() {{
-  const count = getSaved().length;
-  document.getElementById("savedBadge").textContent = count;
+  document.getElementById("savedBadge").textContent = _saved.length;
 }}
 
-// ---- Applied Jobs (localStorage) ----
-const APPLIED_KEY = "swe_applied_jobs";
-function getApplied() {{
-  try {{ return JSON.parse(localStorage.getItem(APPLIED_KEY) || "{{}}"); }}
-  catch(e) {{ return {{}}; }}
-}}
-function setApplied(obj) {{
-  localStorage.setItem(APPLIED_KEY, JSON.stringify(obj));
-}}
-function isApplied(job) {{
-  return !!getApplied()[job.url];
-}}
+// ---- Applied Jobs ----
+function getApplied() {{ return _applied; }}
+function isApplied(job) {{ return !!_applied[job.url]; }}
 function toggleApplied(job) {{
-  const applied = getApplied();
-  if (applied[job.url]) {{
-    delete applied[job.url];
+  if (_applied[job.url]) {{
+    delete _applied[job.url];
     showToast("Removed from applied jobs");
   }} else {{
-    applied[job.url] = new Date().toISOString();
+    _applied[job.url] = new Date().toISOString();
     showToast("\u2713 Marked as applied!");
   }}
-  setApplied(applied);
+  scheduleSyncToGist();
   updateAppliedBadge();
   render();
   renderSaved();
   renderApplied();
 }}
 function updateAppliedBadge() {{
-  const count = Object.keys(getApplied()).length;
-  document.getElementById("appliedBadge").textContent = count;
+  document.getElementById("appliedBadge").textContent = Object.keys(_applied).length;
 }}
 
-let currentTab = "all";
 function switchTab(tab) {{
   currentTab = tab;
   document.getElementById("tabAll").classList.toggle("active", tab === "all");
@@ -1018,9 +1098,9 @@ document.getElementById("modalCopy").addEventListener("click", () => {{
   copyText(jdText(currentModalJob)).then(() => showToast("Job description copied to clipboard"));
 }});
 
+// Initialize: render with empty state first, then load from Gist
 render();
-updateSavedBadge();
-updateAppliedBadge();
+loadFromGist();
 </script>
 </body>
 </html>
