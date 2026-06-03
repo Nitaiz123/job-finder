@@ -258,10 +258,11 @@ def fetch_workday(slug):
     # candidate frontend, which reduces the rate of soft-blocks on some tenants.
     headers["Referer"] = public_base
 
-    MAX_PAGES = 5
     PAGE_SIZE = 20
+    # No page cap — paginate until Workday returns empty page
 
-    for page in range(MAX_PAGES):
+    page = 0
+    while True:  # no cap
         payload = {"limit": PAGE_SIZE, "offset": page * PAGE_SIZE,
                    "searchText": "", "appliedFacets": {}}
         try:
@@ -302,6 +303,7 @@ def fetch_workday(slug):
         # If we got fewer than a full page, we're done
         if len(postings) < PAGE_SIZE:
             break
+        page += 1
 
     return jobs_out
 
@@ -624,7 +626,8 @@ def fetch_smartrecruiters(slug):
     params = {"limit": 100, "offset": 0}
     jobs_out = []
 
-    for page in range(5):  # up to 500 jobs
+    page = 0
+    while True:  # no cap — paginate until SmartRecruiters returns empty page
         params["offset"] = page * 100
         try:
             r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
@@ -662,6 +665,7 @@ def fetch_smartrecruiters(slug):
 
         if len(postings) < 100:
             break
+        page += 1
 
     return jobs_out
 
@@ -763,7 +767,6 @@ def fetch_amazon(slug="amazon"):
     """
     BASE = "https://www.amazon.jobs/en/search.json"
     LIMIT = 10
-    MAX_PAGES = 20
     jobs_out = []
 
     h = {
@@ -775,7 +778,8 @@ def fetch_amazon(slug="amazon"):
     # Search for software/engineering roles specifically
     SWE_QUERY = "software engineer OR developer OR SDE OR machine learning OR data engineer OR devops OR cloud engineer OR security engineer OR mobile engineer OR iOS OR android OR platform engineer OR site reliability OR SRE"
 
-    for page in range(MAX_PAGES):
+    page = 0
+    while True:  # no cap — paginate until API returns empty page
         params = {
             "base_query": SWE_QUERY,
             "loc_query": "",
@@ -822,6 +826,7 @@ def fetch_amazon(slug="amazon"):
 
         if len(jobs) < LIMIT:
             break
+        page += 1
 
     return jobs_out
 
@@ -844,7 +849,6 @@ def fetch_apple(slug="apple"):
     BASE = "https://jobs.apple.com/en-us/search"
     # Filter for software engineering roles
     QUERY = "software engineer"
-    MAX_PAGES = 25  # 500 jobs max per run — needed since results include global jobs
     jobs_out = []
 
     h = {
@@ -853,7 +857,8 @@ def fetch_apple(slug="apple"):
         "Accept-Language": "en-US,en;q=0.9",
     }
 
-    for page in range(1, MAX_PAGES + 1):
+    page = 1
+    while True:  # no cap — paginate until Apple returns empty/short page
         # Use relevance sort so SWE roles appear before retail/operations jobs
         url = f"{BASE}?q={requests.utils.quote(QUERY)}&sort=relevance&page={page}"
         try:
@@ -917,6 +922,7 @@ def fetch_apple(slug="apple"):
         # If fewer than 20 results, we've reached the last page
         if len(results) < 20:
             break
+        page += 1
 
     return jobs_out
 
@@ -957,7 +963,7 @@ def fetch_google(slug="google"):
     # but the validation token is tied to this specific bl value.
     BL = "boq_corp-hiring-boq-cportal-frontend_20260527.06_p0"
     VALIDATION = "DFscXLDsHH1VQnRCDDL79rC1sbU="
-    MAX_PAGES = 15  # 20 jobs/page → 300 jobs max per run
+    # No page cap — paginate until Google returns empty page
 
     h = {
         "User-Agent": (
@@ -985,8 +991,8 @@ def fetch_google(slug="google"):
     }
 
     jobs_out = []
-
-    for page in range(1, MAX_PAGES + 1):
+    page = 1
+    while True:  # no cap — paginate until Google returns empty page
         # Build the inner RPC payload
         inner = (
             '[[null,null,null,null,"en-US",null,null,' + str(page) + ']]'
@@ -1111,6 +1117,7 @@ def fetch_google(slug="google"):
 
         if len(job_list) < 20:
             break
+        page += 1
 
     return jobs_out
 
@@ -1152,7 +1159,7 @@ def fetch_microsoft(slug="microsoft"):
     BASE = "https://apply.careers.microsoft.com/api/pcsx/search"
     BASE_URL = "https://apply.careers.microsoft.com"
     PAGE_SIZE = 10
-    MAX_PAGES = 30  # 300 jobs max per run
+    # No page cap — paginate until Microsoft returns empty page
 
     h = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
@@ -1165,8 +1172,8 @@ def fetch_microsoft(slug="microsoft"):
     }
 
     jobs_out = []
-
-    for page in range(MAX_PAGES):
+    page = 0
+    while True:  # no cap — paginate until Microsoft returns empty page
         params = {
             "domain": "microsoft.com",
             "query": "software engineer",
@@ -1227,6 +1234,7 @@ def fetch_microsoft(slug="microsoft"):
 
         if len(positions) < PAGE_SIZE:
             break
+        page += 1
 
     return jobs_out
 
