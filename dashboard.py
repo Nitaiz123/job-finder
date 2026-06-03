@@ -777,7 +777,7 @@ function makeActionBtns(j, idx) {{
 
 function renderSaved() {{
   const saved = getSaved();
-  const savedJobs = JOBS.filter(j => saved.includes(j.url));
+  const savedJobs = JOBS.filter(j => saved.includes(j.url) && !_applied[j.url]);
   const body = document.getElementById("savedBody");
   const tbl = document.getElementById("savedTable");
   const empty = document.getElementById("savedEmpty");
@@ -890,6 +890,7 @@ function render() {{
     const maxAge = parseFloat(document.getElementById("ageFilter").value) || 999999;  // hours
 
   let filtered = JOBS.filter(j => {{
+    if (_applied[j.url]) return false;  // hide applied jobs from All Jobs
     if (ats && j.ats !== ats) return false;
     if (search && !(j.title.toLowerCase().includes(search) ||
                     j.company.toLowerCase().includes(search))) return false;
