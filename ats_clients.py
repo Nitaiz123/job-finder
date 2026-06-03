@@ -262,7 +262,11 @@ def fetch_workday(slug):
     # No page cap — paginate until Workday returns empty page
 
     page = 0
-    while True:  # no cap
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min per Workday tenant
+    while True:  # paginate until empty page or time limit
+        if _time.time() > _deadline:
+            break
         payload = {"limit": PAGE_SIZE, "offset": page * PAGE_SIZE,
                    "searchText": "", "appliedFacets": {}}
         try:
@@ -627,7 +631,11 @@ def fetch_smartrecruiters(slug):
     jobs_out = []
 
     page = 0
-    while True:  # no cap — paginate until SmartRecruiters returns empty page
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min per company
+    while True:  # paginate until SmartRecruiters returns empty page or time limit
+        if _time.time() > _deadline:
+            break
         params["offset"] = page * 100
         try:
             r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
@@ -779,7 +787,11 @@ def fetch_amazon(slug="amazon"):
     SWE_QUERY = "software engineer OR developer OR SDE OR machine learning OR data engineer OR devops OR cloud engineer OR security engineer OR mobile engineer OR iOS OR android OR platform engineer OR site reliability OR SRE"
 
     page = 0
-    while True:  # no cap — paginate until API returns empty page
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min for Amazon
+    while True:  # paginate until API returns empty page or time limit
+        if _time.time() > _deadline:
+            break
         params = {
             "base_query": SWE_QUERY,
             "loc_query": "",
@@ -858,7 +870,11 @@ def fetch_apple(slug="apple"):
     }
 
     page = 1
-    while True:  # no cap — paginate until Apple returns empty/short page
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min for Apple
+    while True:  # paginate until Apple returns empty/short page or time limit
+        if _time.time() > _deadline:
+            break
         # Use relevance sort so SWE roles appear before retail/operations jobs
         url = f"{BASE}?q={requests.utils.quote(QUERY)}&sort=relevance&page={page}"
         try:
@@ -992,7 +1008,11 @@ def fetch_google(slug="google"):
 
     jobs_out = []
     page = 1
-    while True:  # no cap — paginate until Google returns empty page
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min for Google
+    while True:  # paginate until Google returns empty page or time limit
+        if _time.time() > _deadline:
+            break
         # Build the inner RPC payload
         inner = (
             '[[null,null,null,null,"en-US",null,null,' + str(page) + ']]'
@@ -1173,7 +1193,11 @@ def fetch_microsoft(slug="microsoft"):
 
     jobs_out = []
     page = 0
-    while True:  # no cap — paginate until Microsoft returns empty page
+    import time as _time
+    _deadline = _time.time() + 300  # max 5 min for Microsoft
+    while True:  # paginate until Microsoft returns empty page or time limit
+        if _time.time() > _deadline:
+            break
         params = {
             "domain": "microsoft.com",
             "query": "software engineer",
