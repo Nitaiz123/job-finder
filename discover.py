@@ -25,9 +25,10 @@ on first load.
 
 Discovery sources (all public):
   1. Simplify GitHub repos (re-crawled each run; grows as PRs land)
-  2. A rotating set of additional public job-board aggregator repos
-  3. Candidate slugs harvested from already-known boards' job content
-     (companies sometimes link to partner/portfolio companies)
+  2. 60+ additional public job-board aggregator repos (all sectors)
+  3. CareerPuck sitemap (direct enumeration of all CareerPuck tenants)
+  4. Trusted curated company lists (YC, Forbes, etc.) scraped for ATS links
+  5. Parallel validation with 20 workers for speed
 
 Validation is the gate. We never trust a candidate slug until it returns jobs.
 """
@@ -35,6 +36,7 @@ Validation is the gate. We never trust a candidate slug until it returns jobs.
 import json
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -47,67 +49,42 @@ ROOT = Path(__file__).parent
 COMPANIES_PATH = ROOT / "companies.json"
 CANDIDATES_PATH = ROOT / "discovery_candidates.json"  # pending, unvalidated
 
-# Additional public repos that list companies with ATS application links.
-# These complement the Simplify repos already used in bootstrap.py.
+# ---------------------------------------------------------------------------
+# Discovery source URLs — all public GitHub repos containing raw ATS links
+# ---------------------------------------------------------------------------
 EXTRA_SOURCE_URLS = [
     # ---- Simplify repos — primary source ----
     "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
     "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/README.md",
     "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README-Off-Season.md",
 
     # ---- Community SWE job-tracking repos ----
     "https://raw.githubusercontent.com/speedyapply/2025-AI-College-Jobs/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Jobs/main/README.md",
-    "https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/dev/README.md",
-    "https://raw.githubusercontent.com/ReaVNaiL/New-Grad-2024/main/README.md",
-    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
-    "https://raw.githubusercontent.com/coderQuad/New-Grad-Positions-2023/master/README.md",
-    "https://raw.githubusercontent.com/Ouckah/Summer2025-Internships/dev/README.md",
-    "https://raw.githubusercontent.com/cvrve/Summer2025-Internships/dev/README.md",
-    "https://raw.githubusercontent.com/alenachao/New-Grad-2025/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Backend-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-ML-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Internship/main/README.md",
-
-    # ---- Additional SWE / new-grad repos ----
-    "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README-Off-Season.md",
     "https://raw.githubusercontent.com/speedyapply/2026-SWE-College-Jobs/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Jobs/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Jobs/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2026-Data-Science-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2026-ML-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2026-Backend-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2026-Cyber-Security-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Product-Management-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-DevOps-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-IT-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-New-Grad/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-New-Grad/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-ML-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Backend-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Backend-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Backend-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-ML-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-ML-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-ML-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Data-Science-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Cyber-Security-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-DevOps-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-DevOps-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-IT-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Product-Management-Internship/main/README.md",
 
-    # ---- Finance / quant / trading repos ----
-    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
-    "https://raw.githubusercontent.com/quantfinance/quant-jobs/main/README.md",
-    "https://raw.githubusercontent.com/AkashSingh3031/The-Complete-FAANG-Preparation/master/README.md",
-
-    # ---- Broader job lists (all sectors) ----
-    "https://raw.githubusercontent.com/tramcar/tramcar/main/README.md",
-    "https://raw.githubusercontent.com/remoteintech/remote-jobs/main/README.md",
-    "https://raw.githubusercontent.com/lukasz-madon/awesome-remote-job/master/README.md",
-    "https://raw.githubusercontent.com/engineerapart/TheRemoteFreelancer/master/README.md",
-    "https://raw.githubusercontent.com/poteto/hiring-without-whiteboards/master/README.md",
-    "https://raw.githubusercontent.com/cassidoo/getting-a-gig/master/README.md",
-    "https://raw.githubusercontent.com/j-delaney/easy-application/master/README.md",
-    "https://raw.githubusercontent.com/Twipped/InterviewThis/master/README.md",
-    "https://raw.githubusercontent.com/MaximAbramchuck/awesome-interview-questions/master/README.md",
-    "https://raw.githubusercontent.com/DopplerHQ/awesome-interview-questions/master/README.md",
-
-    # ---- Sector-specific: healthcare, biotech, fintech ----
+    # ---- Sector-specific repos ----
     "https://raw.githubusercontent.com/jobright-ai/2025-Health-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Finance-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Marketing-Internship/main/README.md",
@@ -119,21 +96,64 @@ EXTRA_SOURCE_URLS = [
     "https://raw.githubusercontent.com/jobright-ai/2025-Operations-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Mechanical-Engineering-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Electrical-Engineering-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Civil-Engineering-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Chemical-Engineering-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Aerospace-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Bioengineering-Internship/main/README.md",
-    "https://raw.githubusercontent.com/jobright-ai/2025-Environmental-Internship/main/README.md",
+
+    # ---- New-grad / off-season repos ----
+    "https://raw.githubusercontent.com/ReaVNaiL/New-Grad-2024/main/README.md",
+    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
+    "https://raw.githubusercontent.com/coderQuad/New-Grad-Positions-2023/master/README.md",
+    "https://raw.githubusercontent.com/alenachao/New-Grad-2025/main/README.md",
+    "https://raw.githubusercontent.com/Ouckah/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/cvrve/Summer2025-Internships/dev/README.md",
+    "https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/dev/README.md",
+
+    # ---- Remote / hiring culture repos ----
+    "https://raw.githubusercontent.com/remoteintech/remote-jobs/main/README.md",
+    "https://raw.githubusercontent.com/lukasz-madon/awesome-remote-job/master/README.md",
+    "https://raw.githubusercontent.com/poteto/hiring-without-whiteboards/master/README.md",
+    "https://raw.githubusercontent.com/j-delaney/easy-application/master/README.md",
+    "https://raw.githubusercontent.com/cassidoo/getting-a-gig/master/README.md",
+
+    # ---- Finance / quant ----
+    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
+
+    # ---- Awesome lists with company links ----
+    "https://raw.githubusercontent.com/engineerapart/TheRemoteFreelancer/master/README.md",
+    "https://raw.githubusercontent.com/tramcar/tramcar/main/README.md",
+]
+
+# ---------------------------------------------------------------------------
+# Trusted curated company list sources — scraped for ATS links directly
+# These are high-quality sources (YC, Forbes, etc.) that list real companies
+# ---------------------------------------------------------------------------
+CURATED_COMPANY_LIST_URLS = [
+    # Y Combinator companies — top startup source
+    "https://raw.githubusercontent.com/yc-oss/api/main/batches/all.json",
+    # Awesome YC companies list
+    "https://raw.githubusercontent.com/dsernst/awesome-yc-companies/master/README.md",
+    # Unicorn companies list
+    "https://raw.githubusercontent.com/nicholasgasior/unicorn-companies/master/README.md",
+    # Tech company career pages list
+    "https://raw.githubusercontent.com/tramcar/tramcar/main/README.md",
+    # H1B sponsoring companies (large employers)
+    "https://raw.githubusercontent.com/nicholasgasior/h1b-data/master/README.md",
+    # Awesome startups
+    "https://raw.githubusercontent.com/KrishMunot/awesome-startup/master/README.md",
+    # Tech companies with good eng culture
+    "https://raw.githubusercontent.com/Twipped/InterviewThis/master/README.md",
 ]
 
 ATS_PATTERNS = {
     "greenhouse": [
         re.compile(r"boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
         re.compile(r"job-boards\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
-        re.compile(r"boards\.eu\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"job-boards\.eu\.greenhouse\.io/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"greenhouse\.io/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
     ],
     "lever": [
         re.compile(r"jobs\.lever\.co/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"lever\.co/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
     ],
     "ashby": [
         re.compile(r"jobs\.ashbyhq\.com/([a-z0-9][a-z0-9\.\-]*)", re.IGNORECASE),
@@ -141,6 +161,7 @@ ATS_PATTERNS = {
     ],
     "workable": [
         re.compile(r"apply\.workable\.com/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
+        re.compile(r"workable\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
     ],
     "eightfold": [
         re.compile(r"([a-z0-9][a-z0-9\-]*)\.eightfold\.ai", re.IGNORECASE),
@@ -149,7 +170,6 @@ ATS_PATTERNS = {
         re.compile(r"careers-([a-z0-9][a-z0-9\-]*)\.icims\.com", re.IGNORECASE),
         re.compile(r"(?<![a-z\-])([a-z0-9][a-z0-9\-]+)\.icims\.com", re.IGNORECASE),
     ],
-    # New ATSes with clean public APIs
     "smartrecruiters": [
         re.compile(r"jobs\.smartrecruiters\.com/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
         re.compile(r"smartrecruiters\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
@@ -238,9 +258,51 @@ def harvest_careerpuck_sitemap():
     return found
 
 
+def harvest_yc_companies():
+    """
+    Harvest ATS slugs from Y Combinator's public company API.
+    YC publishes a JSON list of all their portfolio companies at:
+      https://raw.githubusercontent.com/yc-oss/api/main/batches/all.json
+    Each entry has a 'website' field. We fetch each company's careers page
+    and look for ATS links.
+
+    To avoid hammering hundreds of sites, we only check companies that have
+    a 'jobs_url' field pointing directly to an ATS.
+    """
+    found = set()
+    text = fetch_text("https://raw.githubusercontent.com/yc-oss/api/main/batches/all.json")
+    if not text:
+        return found
+    try:
+        companies = json.loads(text)
+    except (json.JSONDecodeError, ValueError):
+        return found
+
+    if not isinstance(companies, list):
+        return found
+
+    # Extract ATS slugs from jobs_url fields directly — no extra HTTP requests needed
+    for company in companies:
+        jobs_url = company.get("jobs_url") or company.get("url") or ""
+        website = company.get("website") or ""
+        for url in [jobs_url, website]:
+            if not url:
+                continue
+            for ats, patterns in ATS_PATTERNS.items():
+                for pattern in patterns:
+                    for m in pattern.findall(url):
+                        slug = m.lower().strip().strip("-.")
+                        if slug and len(slug) > 1 and not slug.startswith("www"):
+                            found.add((ats, slug))
+
+    return found
+
+
 def harvest_candidates():
     """Pull candidate (ats, slug) pairs from all discovery sources."""
     found = set()
+
+    # 1. Scan all GitHub source repos
     for url in EXTRA_SOURCE_URLS:
         text = fetch_text(url)
         if not text:
@@ -251,10 +313,26 @@ def harvest_candidates():
                     slug = m.lower().strip().strip("-.")
                     if slug and len(slug) > 1 and not slug.startswith("www"):
                         found.add((ats, slug))
-        time.sleep(0.4)
+        time.sleep(0.2)
 
-    # CareerPuck has its own enumerable sitemap — use it directly.
+    # 2. Scan curated company list sources
+    for url in CURATED_COMPANY_LIST_URLS:
+        text = fetch_text(url)
+        if not text:
+            continue
+        for ats, patterns in ATS_PATTERNS.items():
+            for pattern in patterns:
+                for m in pattern.findall(text):
+                    slug = m.lower().strip().strip("-.")
+                    if slug and len(slug) > 1 and not slug.startswith("www"):
+                        found.add((ats, slug))
+        time.sleep(0.2)
+
+    # 3. CareerPuck has its own enumerable sitemap — use it directly.
     found |= harvest_careerpuck_sitemap()
+
+    # 4. Y Combinator company list — direct ATS link extraction
+    found |= harvest_yc_companies()
 
     return found
 
@@ -281,13 +359,14 @@ def run_discovery(verbose=True):
     Steps:
       1. Load existing companies + pending candidates.
       2. Harvest fresh candidate slugs from sources.
-      3. For each *new* candidate (not already a known company), validate it.
+      3. For each *new* candidate (not already a known company), validate it
+         in parallel (20 workers).
          - If it returns jobs -> promote to companies.json (source=discovered).
          - If not -> keep it in the candidates file with an attempt count;
-           drop it after 3 failed validation attempts so we stop retrying junk.
+           drop it after 5 failed validation attempts so we stop retrying junk.
     """
     if verbose:
-        print("=== Auto-discovery (conservative) ===")
+        print("=== Auto-discovery ===")
 
     companies = load_companies()
     known = {(c["ats"], c["slug"]) for c in companies}
@@ -295,56 +374,69 @@ def run_discovery(verbose=True):
 
     harvested = harvest_candidates()
     new_harvested = [pair for pair in harvested if pair not in known]
+
     if verbose:
         print(f"Harvested {len(harvested)} slugs from sources, "
               f"{len(new_harvested)} not already known")
 
+    # Cap validations per run to avoid runaway runtimes.
+    # deep mode: nightly workflow sweeps the full backlog.
+    MAX_VALIDATIONS = 60 if DISCOVERY_MODE == "conservative" else (2000 if DISCOVERY_MODE == "deep" else 500)
+    PARALLEL_WORKERS = 20
+
+    to_validate = new_harvested[:MAX_VALIDATIONS]
+    # Stash the rest as pending for next run
+    for ats, slug in new_harvested[MAX_VALIDATIONS:]:
+        key = f"{ats}|{slug}"
+        if key not in candidates:
+            candidates[key] = {"ats": ats, "slug": slug, "attempts": 0,
+                               "first_seen": _now()}
+
     promoted = 0
     rejected = 0
-    validated_this_run = 0
 
-    # Cap validations per run so a huge harvest doesn't make the run crawl.
-    # deep mode: used by the nightly deep-discovery workflow for full backlog sweep.
-    MAX_VALIDATIONS = 60 if DISCOVERY_MODE == "conservative" else (2000 if DISCOVERY_MODE == "deep" else 500)
+    if verbose:
+        print(f"Validating {len(to_validate)} candidates with {PARALLEL_WORKERS} workers...")
 
-    for ats, slug in new_harvested:
-        if validated_this_run >= MAX_VALIDATIONS:
-            # Stash the rest as pending for next run.
+    def _validate(pair):
+        ats, slug = pair
+        count = validate_candidate(ats, slug)
+        return ats, slug, count
+
+    with ThreadPoolExecutor(max_workers=PARALLEL_WORKERS) as pool:
+        futures = {pool.submit(_validate, pair): pair for pair in to_validate}
+        for future in as_completed(futures):
+            try:
+                ats, slug, job_count = future.result()
+            except Exception:
+                continue
+
             key = f"{ats}|{slug}"
-            if key not in candidates:
-                candidates[key] = {"ats": ats, "slug": slug, "attempts": 0,
-                                   "first_seen": _now()}
-            continue
-
-        validated_this_run += 1
-        job_count = validate_candidate(ats, slug)
-        key = f"{ats}|{slug}"
-
-        if job_count > 0:
-            companies.append({
-                "slug": slug,
-                "ats": ats,
-                "source": "discovered",
-                "added_at": _now(),
-                "last_validated_at": _now(),
-                "miss_streak": 0,
-                "last_job_count": job_count,
-            })
-            known.add((ats, slug))
-            candidates.pop(key, None)
-            promoted += 1
-            if verbose:
-                print(f"  + PROMOTED {ats}:{slug} ({job_count} jobs)")
-        else:
-            # Track failed attempts; drop after 3 tries.
-            entry = candidates.get(key, {"ats": ats, "slug": slug, "attempts": 0,
-                                         "first_seen": _now()})
-            entry["attempts"] = entry.get("attempts", 0) + 1
-            if entry["attempts"] >= 3:
+            if job_count > 0:
+                companies.append({
+                    "slug": slug,
+                    "ats": ats,
+                    "source": "discovered",
+                    "added_at": _now(),
+                    "last_validated_at": _now(),
+                    "miss_streak": 0,
+                    "last_job_count": job_count,
+                })
+                known.add((ats, slug))
                 candidates.pop(key, None)
-                rejected += 1
+                promoted += 1
+                if verbose:
+                    print(f"  + PROMOTED {ats}:{slug} ({job_count} jobs)")
             else:
-                candidates[key] = entry
+                # Track failed attempts; drop after 5 tries (was 3).
+                entry = candidates.get(key, {"ats": ats, "slug": slug, "attempts": 0,
+                                             "first_seen": _now()})
+                entry["attempts"] = entry.get("attempts", 0) + 1
+                if entry["attempts"] >= 5:
+                    candidates.pop(key, None)
+                    rejected += 1
+                else:
+                    candidates[key] = entry
 
     save_companies(companies)
     save_candidates(candidates)
@@ -352,7 +444,7 @@ def run_discovery(verbose=True):
     if verbose:
         print(f"\nDiscovery summary:")
         print(f"  Promoted to companies.json: {promoted}")
-        print(f"  Rejected (3 failed tries):  {rejected}")
+        print(f"  Rejected (5 failed tries):  {rejected}")
         print(f"  Pending candidates:         {len(candidates)}")
         print(f"  Total companies now:        {len(companies)}")
 
