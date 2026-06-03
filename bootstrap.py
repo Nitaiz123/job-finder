@@ -211,6 +211,117 @@ CURATED_SEED = {
         "naughtydog",       # Naughty Dog (PlayStation) - 10 jobs
         "insomniac",        # Insomniac Games (Spider-Man) - 3 jobs
         "bungie",           # Bungie (Destiny) - 1 job
+
+        # --- Sector expansion: Finance & Fintech (verified) ---
+        "adyen",         # Adyen - 213 jobs
+        "sezzle",        # Sezzle - 207 jobs
+        "ripple",        # Ripple (XRP) - 127 jobs
+        "nubank",        # Nubank - 105 jobs
+        "gemini",        # Gemini (crypto) - 27 jobs
+        "pandadoc",      # PandaDoc - 48 jobs
+        "blend",         # Blend (mortgage tech) - 5 jobs
+        "brex",          # Brex - 227 jobs
+        "slice",         # Slice (pizza tech) - 75 jobs
+        "shift4",        # Shift4 Payments - 71 jobs
+
+        # --- Sector expansion: Healthcare & Biotech (verified) ---
+        "natera",        # Natera (genetic testing) - 198 jobs
+        "oscar",         # Oscar Health - 226 jobs
+        "amwell",        # Amwell (telehealth) - 19 jobs
+        "modernhealth",  # Modern Health - 11 jobs
+        "10xgenomics",   # 10x Genomics - 35 jobs
+        "solidpower",    # Solid Power (batteries) - 10 jobs
+        "branch",        # Branch (insurance) - 8 jobs
+        "cerebral",      # Cerebral (mental health) - 3 jobs
+        "climateai",     # ClimateAI - 2 jobs
+        "sunnova",       # Sunnova (solar) - 2 jobs
+        "tomorrow",      # Tomorrow.io (weather AI) - 12 jobs
+
+        # --- Sector expansion: Defense & Aerospace (verified) ---
+        "rocketlab",     # Rocket Lab - 311 jobs
+        "motional",      # Motional (AV) - 120 jobs
+        "nuro",          # Nuro (delivery robots) - 108 jobs
+        "kodiak",        # Kodiak Robotics - 58 jobs
+        "wing",          # Wing (drone delivery) - 29 jobs
+        "spire",         # Spire Global (satellites) - 45 jobs
+        "supernal",      # Supernal (eVTOL) - 3 jobs
+        "archer",        # Archer Aviation - 1 job
+
+        # --- Sector expansion: Enterprise & SaaS (verified) ---
+        "nice",          # NICE Systems - 358 jobs
+        "purestorage",   # Pure Storage - 334 jobs
+        "samsara",       # Samsara - 315 jobs
+        "toast",         # Toast (restaurant tech) - 297 jobs
+        "canonical",     # Canonical (Ubuntu) - 289 jobs
+        "clickhouse",    # ClickHouse - 169 jobs
+        "via",           # Via (transit) - 168 jobs
+        "newrelic",      # New Relic - 72 jobs
+        "zoominfo",      # ZoomInfo - 58 jobs
+        "salesloft",     # Salesloft - 31 jobs
+        "6sense",        # 6sense - 34 jobs
+        "project44",     # project44 (logistics) - 33 jobs
+        "starburst",     # Starburst (data) - 22 jobs
+        "veracode",      # Veracode (security) - 20 jobs
+        "imply",         # Imply (Druid) - 7 jobs
+        "dremio",        # Dremio - 6 jobs
+        "materialize",   # Materialize (streaming SQL) - 3 jobs
+        "bombora",       # Bombora (B2B intent) - 1 job
+
+        # --- Sector expansion: Transportation & Logistics (verified) ---
+        "bird",          # Bird (scooters) - 41 jobs
+        "spin",          # Spin (scooters) - 23 jobs
+        "vacasa",        # Vacasa (vacation rentals) - 47 jobs
+        "shipmonk",      # ShipMonk (fulfillment) - 41 jobs
+        "fourkites",     # FourKites (supply chain) - 8 jobs
+        "motive",        # Motive (fleet) - 4 jobs
+        "netradyne",     # Netradyne (fleet safety) - 65 jobs
+        "nauto",         # Nauto (fleet AI) - 4 jobs
+        "loadsmart",     # Loadsmart - 17 jobs (also Lever)
+
+        # --- Sector expansion: Travel & Hospitality (verified) ---
+        "tripadvisor",   # TripAdvisor - 94 jobs
+        "skyscanner",    # Skyscanner - 23 jobs
+        "kayak",         # KAYAK - 1 job
+
+        # --- Sector expansion: Food & Restaurant Tech (verified) ---
+        "sweetgreen",    # Sweetgreen - 52 jobs
+        "touchbistro",   # TouchBistro - 5 jobs
+        "papa",          # Papa (elder care) - 4 jobs
+
+        # --- Sector expansion: Real Estate & Proptech (verified) ---
+        "orchard",       # Orchard (home buying) - 72 jobs
+        "crexi",         # Crexi (commercial RE) - 15 jobs
+        "hover",         # Hover (3D home imaging) - 24 jobs
+        "knock",         # Knock (home trade-in) - 4 jobs
+        "homeward",      # Homeward - 2 jobs
+        "convene",       # Convene (flex office) - 35 jobs
+
+        # --- Sector expansion: Education & Edtech (verified) ---
+        "d2l",           # D2L (Brightspace LMS) - 31 jobs
+        "generalassembly", # General Assembly - 28 jobs
+        "newsela",       # Newsela - 16 jobs
+        "udacity",       # Udacity - 14 jobs
+        "udemy",         # Udemy - 7 jobs
+        "springboard",   # Springboard - 6 jobs
+
+        # --- Sector expansion: Legal Tech (verified) ---
+        "litify",        # Litify (legal CRM) - 8 jobs
+
+        # --- Sector expansion: Insurance & Insurtech (verified) ---
+        "openly",        # Openly (home insurance) - 6 jobs
+
+        # --- Sector expansion: Other (verified) ---
+        "virtu",         # Virtu Financial (HFT) - 37 jobs
+        "jumptrading",   # Jump Trading (quant) - 68 jobs
+        "tcs",           # Tata Consultancy Services - 71 jobs
+        "array",         # Array (solar tracking) - 17 jobs
+        "offerup",       # OfferUp (marketplace) - 4 jobs
+        "mercari",       # Mercari (marketplace) - 3 jobs
+        "disney",        # Disney (some roles on GH) - 1 job
+        "figment",       # Figment (crypto staking) - 1 job
+        "shield",        # Shield AI (defense) - 1 job
+        "calm",          # Calm (meditation) - 1 job
+        "revel",         # Revel Systems (POS) - 1 job
     ],
     "lever": [
         # --- Verified Lever companies ---
@@ -241,6 +352,16 @@ CURATED_SEED = {
         "deliveroo", "starlingbank", "tide", "bulb", "depop",
         "soundcloud", "babbel", "gympass", "wefox", "raisin",
         "mambu", "solarisbank", "moonpig", "secret-escapes",
+        # --- Sector expansion: verified Lever companies ---
+        "veeva",         # Veeva Systems - 1028 jobs
+        "sila",          # Sila Nanotechnologies (batteries) - 283 jobs
+        "filevine",      # Filevine (legal tech) - 134 jobs
+        "ro",            # Ro (telehealth) - 53 jobs
+        "outreach",      # Outreach (sales) - 34 jobs
+        "olo",           # Olo (restaurant tech) - 14 jobs
+        "chownow",       # ChowNow (restaurant tech) - 10 jobs
+        "15five",        # 15Five (HR) - 4 jobs
+        "relay",         # Relay (banking) - 3 jobs
     ],
     "ashby": [
         # --- Verified Ashby companies (confirmed via API) ---
@@ -276,6 +397,32 @@ CURATED_SEED = {
         # --- Media on Ashby ---
         "slate",         # Slate Magazine - 7 jobs
         "take2",         # Take-Two Interactive - 5 jobs
+        # --- Sector expansion: verified Ashby companies ---
+        "airwallex",     # Airwallex (fintech) - 577 jobs
+        "elevenlabs",    # ElevenLabs (voice AI) - 148 jobs
+        "deepgram",      # Deepgram (speech AI) - 60 jobs
+        "suno",          # Suno (music AI) - 43 jobs
+        "relay",         # Relay.app (automation) - 37 jobs
+        "modal",         # Modal (cloud compute) - 31 jobs
+        "astronomer",    # Astronomer (Airflow) - 28 jobs
+        "render",        # Render (cloud hosting) - 23 jobs
+        "anyscale",      # Anyscale (Ray) - 11 jobs
+        "column",        # Column (banking infra) - 11 jobs
+        "novo",          # Novo (SMB banking) - 11 jobs
+        "railway",       # Railway (cloud hosting) - 9 jobs
+        "unit",          # Unit (embedded banking) - 9 jobs
+        "clearco",       # Clearco (revenue-based financing) - 7 jobs
+        "neon",          # Neon (serverless Postgres) - 7 jobs
+        "aquant",        # Aquant (field service AI) - 5 jobs
+        "griffin",       # Griffin (banking-as-a-service) - 5 jobs
+        "pika",          # Pika (video AI) - 5 jobs
+        "prefect",       # Prefect (data orchestration) - 4 jobs
+        "runway",        # Runway (video AI) - 4 jobs
+        "capchase",      # Capchase (revenue financing) - 3 jobs
+        "conductor",     # Conductor (SEO) - 3 jobs
+        "found",         # Found (SMB banking) - 3 jobs
+        "datafold",      # Datafold (data quality) - 1 job
+        "tekton",        # Tekton (CI/CD) - 1 job
     ],
     "workable": [
         "doctolib", "klarna", "back-market", "alan", "swile",

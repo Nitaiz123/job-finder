@@ -50,11 +50,12 @@ CANDIDATES_PATH = ROOT / "discovery_candidates.json"  # pending, unvalidated
 # Additional public repos that list companies with ATS application links.
 # These complement the Simplify repos already used in bootstrap.py.
 EXTRA_SOURCE_URLS = [
-    # Simplify repos — primary source
+    # ---- Simplify repos — primary source ----
     "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
     "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/README.md",
     "https://raw.githubusercontent.com/SimplifyJobs/Summer2025-Internships/dev/README.md",
-    # Community job-tracking repos
+
+    # ---- Community SWE job-tracking repos ----
     "https://raw.githubusercontent.com/speedyapply/2025-AI-College-Jobs/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Jobs/main/README.md",
     "https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/dev/README.md",
@@ -69,6 +70,60 @@ EXTRA_SOURCE_URLS = [
     "https://raw.githubusercontent.com/jobright-ai/2025-ML-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-Internship/main/README.md",
     "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-Internship/main/README.md",
+
+    # ---- Additional SWE / new-grad repos ----
+    "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README-Off-Season.md",
+    "https://raw.githubusercontent.com/speedyapply/2026-SWE-College-Jobs/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Jobs/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Data-Science-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-ML-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Backend-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2026-Cyber-Security-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Product-Management-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-DevOps-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-IT-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Software-Engineer-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Data-Science-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-ML-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Backend-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Cyber-Security-New-Grad/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-DevOps-New-Grad/main/README.md",
+
+    # ---- Finance / quant / trading repos ----
+    "https://raw.githubusercontent.com/pittcsc/NewGrad-Positions/dev/README.md",
+    "https://raw.githubusercontent.com/quantfinance/quant-jobs/main/README.md",
+    "https://raw.githubusercontent.com/AkashSingh3031/The-Complete-FAANG-Preparation/master/README.md",
+
+    # ---- Broader job lists (all sectors) ----
+    "https://raw.githubusercontent.com/tramcar/tramcar/main/README.md",
+    "https://raw.githubusercontent.com/remoteintech/remote-jobs/main/README.md",
+    "https://raw.githubusercontent.com/lukasz-madon/awesome-remote-job/master/README.md",
+    "https://raw.githubusercontent.com/engineerapart/TheRemoteFreelancer/master/README.md",
+    "https://raw.githubusercontent.com/poteto/hiring-without-whiteboards/master/README.md",
+    "https://raw.githubusercontent.com/cassidoo/getting-a-gig/master/README.md",
+    "https://raw.githubusercontent.com/j-delaney/easy-application/master/README.md",
+    "https://raw.githubusercontent.com/Twipped/InterviewThis/master/README.md",
+    "https://raw.githubusercontent.com/MaximAbramchuck/awesome-interview-questions/master/README.md",
+    "https://raw.githubusercontent.com/DopplerHQ/awesome-interview-questions/master/README.md",
+
+    # ---- Sector-specific: healthcare, biotech, fintech ----
+    "https://raw.githubusercontent.com/jobright-ai/2025-Health-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Finance-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Marketing-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Sales-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Legal-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Accounting-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Management-Consulting-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Business-Analyst-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Operations-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Mechanical-Engineering-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Electrical-Engineering-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Civil-Engineering-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Chemical-Engineering-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Aerospace-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Bioengineering-Internship/main/README.md",
+    "https://raw.githubusercontent.com/jobright-ai/2025-Environmental-Internship/main/README.md",
 ]
 
 ATS_PATTERNS = {
@@ -249,7 +304,8 @@ def run_discovery(verbose=True):
     validated_this_run = 0
 
     # Cap validations per run so a huge harvest doesn't make the run crawl.
-    MAX_VALIDATIONS = 60 if DISCOVERY_MODE == "conservative" else 200
+    # deep mode: used by the nightly deep-discovery workflow for full backlog sweep.
+    MAX_VALIDATIONS = 60 if DISCOVERY_MODE == "conservative" else (2000 if DISCOVERY_MODE == "deep" else 500)
 
     for ats, slug in new_harvested:
         if validated_this_run >= MAX_VALIDATIONS:

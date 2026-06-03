@@ -1,0 +1,101 @@
+name: Nightly deep discovery
+
+on:
+  # Run once per day at 06:00 UTC (1am CDT / midnight CST) — off-peak hours
+  # so it doesn't compete with the regular fetch runs.
+  schedule:
+    - cron: '0 6 * * *'
+  # Allow manual trigger for testing.
+  workflow_dispatch:
+
+permissions:
+  contents: write   # push updated companies.json / candidates to data branch
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deep-discovery
+  cancel-in-progress: false
+
+jobs:
+  deep-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55   # deep mode can validate up to 2000 candidates
+
+    steps:
+      - name: Checkout code (main branch)
+        uses: actions/checkout@v4
+
+      - name: Restore state from data branch
+        run: |
+          set -e
+          mkdir -p _state
+          if git ls-remote --exit-code --heads origin data > /dev/null 2>&1; then
+            echo "Restoring state from 'data' branch..."
+            git fetch origin data --depth=1
+            git --work-tree=_state checkout origin/data -- \
+              companies.json jobs.db discovery_candidates.json jobs_latest.json 2>/dev/null || true
+            for f in companies.json jobs.db discovery_candidates.json jobs_latest.json; do
+              if [ -f "_state/$f" ]; then
+                cp "_state/$f" "./$f"
+                echo "  Restored $f ($(du -h "$f" | cut -f1))"
+              fi
+            done
+          else
+            echo "No 'data' branch yet — first run, will bootstrap."
+          fi
+          rm -rf _state
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Bootstrap company list (if missing)
+        run: |
+          if [ ! -f companies.json ]; then
+            echo "No companies.json -- running bootstrap..."
+            python bootstrap.py
+          else
+            echo "companies.json exists ($(wc -c < companies.json) bytes)"
+          fi
+
+      - name: Run deep discovery (up to 2000 validations)
+        run: |
+          # Override DISCOVERY_MODE to "deep" for this run only
+          python - <<'PY'
+          import sys, os
+          # Patch config before importing discover
+          import config
+          config.DISCOVERY_MODE = "deep"
+          from discover import run_discovery
+          promoted = run_discovery(verbose=True)
+          print(f"\nDeep discovery complete. Promoted {promoted} new companies.")
+          PY
+
+      - name: Persist updated state to data branch
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          STATE_DIR=$(mktemp -d)
+          for f in companies.json jobs.db discovery_candidates.json jobs_latest.json; do
+            [ -f "$f" ] && cp "$f" "$STATE_DIR/"
+          done
+
+          git checkout --orphan data-new-discovery
+          git rm -rf . > /dev/null 2>&1 || true
+          cp "$STATE_DIR"/* . 2>/dev/null || true
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No state changes to commit."
+          else
+            git commit -m "deep-discovery: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push origin data-new-discovery:data --force
+            echo "Pushed updated state to 'data' branch."
+          fi
