@@ -322,6 +322,70 @@ CURATED_SEED = {
         "shield",        # Shield AI (defense) - 1 job
         "calm",          # Calm (meditation) - 1 job
         "revel",         # Revel Systems (POS) - 1 job
+
+        # --- Newly verified Greenhouse companies (Jun 2026) ---
+        # Finance & Trading
+        "janestreet",    # Jane Street (quant trading) - 204 jobs
+        "zscaler",       # Zscaler (cloud security) - 329 jobs
+        "relativity",   # Relativity Space (rockets) - 291 jobs
+        "braze",         # Braze (marketing automation) - 194 jobs
+        "workato",       # Workato (automation) - 177 jobs
+        "sofi",          # SoFi (neobank) - 135 jobs
+        "vonage",        # Vonage (CPaaS) - 52 jobs
+        "bandwidth",     # Bandwidth (comms API) - 31 jobs
+        "sendbird",      # Sendbird (chat API) - 16 jobs
+        "neo4j",         # Neo4j (graph DB) - 39 jobs
+        "tigergraph",    # TigerGraph (graph analytics) - 2 jobs
+        "sisense",       # Sisense (BI) - 12 jobs
+        "newrelic",      # New Relic (observability) - 72 jobs
+        "comet",         # Comet (ML experiment tracking) - 6 jobs
+        "deepmind",      # Google DeepMind - 47 jobs
+        "tcs",           # Tata Consultancy Services - 71 jobs
+        "flexport",      # Flexport (logistics) - 100 jobs
+        "openspace",     # OpenSpace (construction AI) - 12 jobs
+        "coalition",     # Coalition (cyber insurance) - 28 jobs
+        "costar",        # CoStar (real estate data) - 3 jobs
+        "2u",            # 2U (online education) - 23 jobs
+        "greenhouse",    # Greenhouse (ATS company itself) - 22 jobs
+        "typeform",      # Typeform (forms) - 19 jobs
+        "salesloft",     # Salesloft (sales engagement) - 31 jobs
+        "zoominfo",      # ZoomInfo (B2B data) - 58 jobs
+        "pandadoc",      # PandaDoc (document automation) - 48 jobs
+        "project44",     # project44 (supply chain visibility) - 33 jobs
+        "shipmonk",      # ShipMonk (fulfillment) - 41 jobs
+        "bringg",        # Bringg (delivery orchestration) - 5 jobs
+        "motive",        # Motive (fleet management) - 4 jobs
+        "fourkites",     # FourKites (supply chain) - 8 jobs
+        "sweetgreen",    # Sweetgreen (restaurant) - 53 jobs
+        "tripadvisor",   # TripAdvisor (travel) - 94 jobs
+        "spin",          # Spin (scooters) - 23 jobs
+        "indigo",        # Indigo Agriculture - 2 jobs
+        "branch",        # Branch (insurance) - 8 jobs
+        "hover",         # Hover (3D imaging) - 23 jobs
+        "d2l",           # D2L (Brightspace LMS) - 31 jobs
+        "airtable",      # Airtable (no-code DB) - 26 jobs
+        "riotgames",     # Riot Games - 188 jobs
+        "2k",            # 2K Games - 115 jobs
+        "epicgames",     # Epic Games - 136 jobs
+        "bungie",        # Bungie (Destiny) - 1 job
+        "naughtydog",    # Naughty Dog (PlayStation) - 13 jobs
+        "insomniac",     # Insomniac Games - 3 jobs
+        "roblox",        # Roblox - 234 jobs
+        "a24",           # A24 Films - 8 jobs
+        "axios",         # Axios (news) - 23 jobs
+        "buzzfeed",      # BuzzFeed - 7 jobs
+        "disney",        # Disney - 1 job
+        "spire",         # Spire Global (satellites) - 45 jobs
+        "relativity",    # Relativity Space - 291 jobs
+        "motional",      # Motional (AV) - 120 jobs
+        "nuro",          # Nuro (delivery robots) - 107 jobs
+        "bird",          # Bird (scooters) - 41 jobs
+        "vacasa",        # Vacasa (vacation rentals) - 47 jobs
+        "nubank",        # Nubank (neobank Brazil) - 105 jobs
+        "adyen",         # Adyen (payments) - 213 jobs
+        "10xgenomics",   # 10x Genomics - 35 jobs
+        "oscar",         # Oscar Health - 230 jobs
+        "sunnova",       # Sunnova (solar) - 2 jobs
     ],
     "lever": [
         # --- Verified Lever companies ---
@@ -362,6 +426,17 @@ CURATED_SEED = {
         "chownow",       # ChowNow (restaurant tech) - 10 jobs
         "15five",        # 15Five (HR) - 4 jobs
         "relay",         # Relay (banking) - 3 jobs
+
+        # --- Newly verified Lever companies (Jun 2026) ---
+        "gopuff",        # GoPuff (instant delivery) - 802 jobs
+        "shieldai",      # Shield AI (defense) - 333 jobs
+        "farfetch",      # Farfetch (luxury fashion) - 62 jobs
+        "contentsquare", # ContentSquare (analytics) - 40 jobs
+        "outreach",      # Outreach (sales engagement) - 34 jobs
+        "neon",          # Neon (serverless Postgres) - 15 jobs
+        "wealthfront",   # Wealthfront (robo-advisor) - 13 jobs
+        "brilliant",     # Brilliant (math/science learning) - 3 jobs
+        "straighterline", # StraighterLine (online courses) - 2 jobs
     ],
     "ashby": [
         # --- Verified Ashby companies (confirmed via API) ---
