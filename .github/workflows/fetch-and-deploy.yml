@@ -134,6 +134,8 @@ jobs:
           PY
 
       - name: Send email notification
+        continue-on-error: true   # don't fail the whole workflow if SendGrid times out
+        timeout-minutes: 2        # cap at 2 min instead of the default 6-hour job timeout
         env:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           NOTIFY_TO: nitaipujari@gmail.com
