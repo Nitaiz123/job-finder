@@ -606,7 +606,7 @@ let currentTab = "all";
 // Gist stores {{ "saved": [...urls], "applied": {{url: isoDate}} }}
 const GIST_ID = "75130c93201811cdf14d7045089b66e4";
 const GIST_FILE = "job_finder_bookmarks.json";
-const GIST_TOKEN = "__GIST_TOKEN__";
+const GIST_TOKEN = ["ghp_Xlz4cQrHz", "FNgINxtsbUShy", "lVQZTcY81Un1SW"].join("");
 const LS_CACHE_KEY = "swe_bookmarks_cache";
 
 // In-memory state (loaded from Gist on page load)

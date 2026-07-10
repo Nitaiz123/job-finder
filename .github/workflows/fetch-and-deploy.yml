@@ -176,12 +176,10 @@ jobs:
       - name: Prepare Pages artifact
         # Stage the files Pages will serve: dashboard as index.html, plus the
         # CSV/JSON exports so they're downloadable from the public URL.
-        env:
-          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
         run: |
           mkdir -p _site
-          # Inject the Gist token placeholder before publishing
-          sed "s/__GIST_TOKEN__/${GIST_TOKEN}/g" dashboard.html > _site/index.html
+          # Token is now embedded directly in dashboard.html (Gist-only scope token)
+          cp dashboard.html _site/index.html
           [ -f jobs_latest.csv ] && cp jobs_latest.csv _site/
           [ -f jobs_latest.json ] && cp jobs_latest.json _site/
           # Tiny meta page with last-update info, for debugging from a browser.
