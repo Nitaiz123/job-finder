@@ -133,34 +133,40 @@ def classify_exp_level(title: str, description: str = "") -> str:
       3-5  -> "3-5 years"
       5+   -> "5+ years"
       None -> "Unspecified"
-    Falls back to title heuristics only when the JD yields nothing.
+
+    Title signals take PRIORITY over JD year extraction.
+    A job titled "Senior SWE" that says "2+ years" in the JD is still 5+.
     """
+    t = " " + (title or "").lower() + " "
+
+    # Title-first: Senior/Staff/Principal/Lead/Director are always 5+ years
+    # regardless of what the JD says about minimum years.
+    SENIOR_SIGNALS = [
+        "senior ", "senior-", " sr.", " sr ", "sr. ",
+        "staff ", "staff-", "principal ", "distinguished ",
+        "lead ", " lead,", "tech lead", "technical lead",
+        "director", "architect", "head of",
+        "manager", "vp ", " vp,", "vice president",
+        "fellow ", " fellow,", "partner ",
+    ]
+    ENTRY_SIGNALS = [
+        "junior", " jr.", " jr ", "associate ",
+        "new grad", "entry level", "entry-level",
+        " i ", " i,", " level 1", " level i ",
+        "intern", "apprentice",
+    ]
+
+    if any(p in t for p in SENIOR_SIGNALS):
+        return "5+ years"
+    if any(p in t for p in ENTRY_SIGNALS):
+        return "0-2 years"
+
+    # No strong title signal — fall back to JD year extraction.
     text = (description or "").strip()
     years = _extract_years(text) if text else None
 
-    # Title-based fallback when JD has no explicit requirement.
-    # Any title that signals seniority -> 5+ years.
-    # Any title that signals entry level -> 0-2 years.
     if years is None:
-        t = " " + (title or "").lower() + " "
-        SENIOR_SIGNALS = [
-            "senior ", "senior-", " sr.", " sr ", "sr. ",
-            "staff ", "principal ", "distinguished ",
-            "lead ", " lead,", "tech lead", "technical lead",
-            "director", "architect", "head of",
-            "manager", "vp ", " vp,",
-        ]
-        ENTRY_SIGNALS = [
-            "junior", " jr.", " jr ", "associate ",
-            "new grad", "entry level", "entry-level",
-            " i ", " i,", " level 1", " level i ",
-        ]
-        if any(p in t for p in SENIOR_SIGNALS):
-            return "5+ years"
-        if any(p in t for p in ENTRY_SIGNALS):
-            return "0-2 years"
         return "Unspecified"
-
     if years <= 2:
         return "0-2 years"
     if years <= 5:

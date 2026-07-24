@@ -136,6 +136,50 @@ jobs:
                   print("File is within acceptable size — no shrink needed.")
           PY
 
+      - name: Re-classify exp_level for existing jobs
+        # Fix any existing jobs that were misclassified (e.g. Senior roles in 0-2 years bucket).
+        # Title signals now take priority over JD year extraction.
+        run: |
+          python - <<'PY'
+          import json, os, re
+          path = "jobs_latest.json"
+          if not os.path.exists(path):
+              print("No jobs_latest.json yet — skipping re-classification.")
+          else:
+              SENIOR_SIGNALS = [
+                  "senior ", "senior-", " sr.", " sr ", "sr. ",
+                  "staff ", "staff-", "principal ", "distinguished ",
+                  "lead ", " lead,", "tech lead", "technical lead",
+                  "director", "architect", "head of",
+                  "manager", "vp ", " vp,", "vice president",
+                  "fellow ", " fellow,", "partner ",
+              ]
+              ENTRY_SIGNALS = [
+                  "junior", " jr.", " jr ", "associate ",
+                  "new grad", "entry level", "entry-level",
+                  " i ", " i,", " level 1", " level i ",
+                  "intern", "apprentice",
+              ]
+              records = json.loads(open(path).read())
+              fixed = 0
+              for r in records:
+                  t = " " + (r.get("title") or "").lower() + " "
+                  if any(p in t for p in SENIOR_SIGNALS):
+                      correct = "5+ years"
+                  elif any(p in t for p in ENTRY_SIGNALS):
+                      correct = "0-2 years"
+                  else:
+                      continue  # no title signal — leave as-is
+                  if r.get("exp_level") != correct:
+                      r["exp_level"] = correct
+                      fixed += 1
+              if fixed:
+                  open(path, 'w').write(json.dumps(records, separators=(',',':')))
+                  print(f"Re-classified {fixed} jobs with wrong exp_level")
+              else:
+                  print("All exp_level values are correct — no changes needed.")
+          PY
+
       - name: Fetch jobs, run discovery, rebuild dashboard
         id: fetch
         run: |
