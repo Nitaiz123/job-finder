@@ -350,6 +350,25 @@ def write_json(new_jobs):
         }
         existing[h] = rec
 
+    # Drop jobs older than 60 days to keep the JSON file size manageable.
+    cutoff = datetime.now(timezone.utc).timestamp() - 60 * 86400
+    pruned = 0
+    for h in list(existing.keys()):
+        rec = existing[h]
+        ts = _neg_time(rec.get("first_seen_at", "") or rec.get("posted_at", ""))
+        if ts != 0 and -ts < cutoff:  # _neg_time returns negative timestamp
+            del existing[h]
+            pruned += 1
+    if pruned:
+        print(f"Pruned {pruned} jobs older than 60 days from accumulated JSON")
+
+    # Truncate description_full to 3000 chars to keep file size manageable.
+    # The modal popup shows the full description but 3000 chars is enough for display.
+    MAX_DESC = 3000
+    for rec in existing.values():
+        if rec.get("description_full") and len(rec["description_full"]) > MAX_DESC:
+            rec["description_full"] = rec["description_full"][:MAX_DESC] + "…"
+
     # Sort: newest first (by first_seen_at, then posted_at).
     all_records = sorted(
         existing.values(),
@@ -359,7 +378,8 @@ def write_json(new_jobs):
         ),
     )
 
-    JSON_PATH.write_text(json.dumps(all_records, indent=2), encoding="utf-8")
+    # Write minified JSON (no indent) to save space.
+    JSON_PATH.write_text(json.dumps(all_records, separators=(',', ':')), encoding="utf-8")
     print(f"Wrote {len(all_records)} accumulated records to {JSON_PATH} "
           f"({len(new_jobs)} new this run)")
 
