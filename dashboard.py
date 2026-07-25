@@ -501,6 +501,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <option value="amazon">Amazon</option>
         <option value="apple">Apple</option>
         <option value="microsoft">Microsoft</option>
+        <option value="recruitee">Recruitee</option>
       </select>
     </div>
   </div>

@@ -1265,3 +1265,63 @@ def fetch_microsoft(slug="microsoft"):
 
 FETCHERS['google'] = fetch_google
 FETCHERS['microsoft'] = fetch_microsoft
+
+
+def fetch_recruitee(slug):
+    """
+    Recruitee public careers API.
+
+    Endpoint:
+      GET https://{slug}.recruitee.com/api/offers/?limit=100
+
+    Returns a JSON object with an 'offers' array. Each offer has:
+      title, city, country_code, remote_option, careers_apply_url,
+      guid, created_at, department, locations
+    """
+    url = f"https://{slug}.recruitee.com/api/offers/?limit=100"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+    except (requests.RequestException, ValueError):
+        return []
+
+    jobs = []
+    for j in data.get("offers", []):
+        city = j.get("city", "") or ""
+        country = j.get("country_code", "") or ""
+        remote = j.get("remote_option", "") or ""
+        if remote and remote.lower() in ("remote", "fully_remote", "fully remote"):
+            location = "Remote"
+        elif city and country:
+            location = f"{city}, {country}"
+        elif city:
+            location = city
+        elif country:
+            location = country
+        else:
+            location = ""
+
+        if remote and remote.lower() in ("hybrid",) and location:
+            location = f"{location} (Hybrid)"
+
+        dept = j.get("department", "") or ""
+        if isinstance(dept, list):
+            dept = ", ".join(str(d) for d in dept if d)
+
+        jobs.append({
+            "company": slug,
+            "ats": "recruitee",
+            "title": j.get("title", "") or j.get("position", ""),
+            "location": location,
+            "url": j.get("careers_apply_url", ""),
+            "posted_at": _parse_iso(j.get("created_at")),
+            "department": dept,
+            "description_snippet": "",
+            "description_full": "",
+        })
+    return jobs
+
+
+FETCHERS['recruitee'] = fetch_recruitee

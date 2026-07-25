@@ -182,6 +182,9 @@ ATS_PATTERNS = {
         re.compile(r"ats\.rippling\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
         re.compile(r"rippling\.com/job-board/([a-z0-9][a-z0-9\-]*)", re.IGNORECASE),
     ],
+    "recruitee": [
+        re.compile(r"([a-z0-9][a-z0-9\-]*)\.recruitee\.com", re.IGNORECASE),
+    ],
     # Workday intentionally excluded from discovery: its compound tenant|host|site
     # slug can't be reliably inferred from a URL alone without verification.
 }

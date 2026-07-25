@@ -52,6 +52,9 @@ ATS_PATTERNS = {
         # Second pattern: company.workable.com but NOT apply.workable.com
         re.compile(r"(?<![a-z])(?!apply\.)([a-z0-9][a-z0-9\-]+)\.workable\.com", re.IGNORECASE),
     ],
+    "recruitee": [
+        re.compile(r"([a-z0-9][a-z0-9\-]*)\.recruitee\.com", re.IGNORECASE),
+    ],
     # Workday: captures (tenant, wdN, site) from URLs like:
     #   https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/...
     #   https://salesforce.wd1.myworkdayjobs.com/External_Career_Site/...
@@ -386,6 +389,51 @@ CURATED_SEED = {
         "10xgenomics",   # 10x Genomics - 35 jobs
         "oscar",         # Oscar Health - 230 jobs
         "sunnova",       # Sunnova (solar) - 2 jobs
+
+        # --- Newly verified Greenhouse companies (Jul 2026) ---
+        # Cybersecurity & Identity
+        "rubrik",        # Rubrik (data security) - 103 jobs
+        "beyondtrust",   # BeyondTrust (privileged access) - 48 jobs
+        "druva",         # Druva (cloud data protection) - 31 jobs
+        "yubico",        # Yubico (hardware security keys) - 16 jobs
+        "godaddy",       # GoDaddy (domain/hosting) - 31 jobs
+        "orca",          # Orca Security (cloud security) - 1 job
+        # Data & Analytics
+        "collibra",      # Collibra (data governance) - 40 jobs
+        "backblaze",     # Backblaze (cloud storage) - 40 jobs
+        # Finance & Trading
+        "carvana",       # Carvana (used cars) - 1905 jobs
+        "imc",           # IMC Trading (quant) - 153 jobs
+        "aqr",           # AQR Capital Management - 46 jobs
+        "bitgo",         # BitGo (crypto custody) - 39 jobs
+        "fireblocks",    # Fireblocks (crypto infra) - 64 jobs
+        # Enterprise SaaS
+        "netskope",      # Netskope (cloud security) - 141 jobs
+        "smartsheet",    # Smartsheet (work management) - 100 jobs
+        "digicert",      # DigiCert (PKI/TLS) - 57 jobs
+        "qualtrics",     # Qualtrics (experience mgmt) - 53 jobs
+        "algolia",       # Algolia (search API) - 49 jobs
+        "sumologic",     # Sumo Logic (log analytics) - 19 jobs
+        "assemblyai",    # AssemblyAI (speech AI) - 10 jobs
+        "circleci",      # CircleCI (CI/CD) - 8 jobs
+        "cybereason",    # Cybereason (endpoint security) - 8 jobs
+        # Gaming & Entertainment
+        "nintendo",      # Nintendo of America - 50 jobs
+        "bethesda",      # Bethesda Softworks - 2 jobs
+        # Other
+        "linkedin",      # LinkedIn (also Greenhouse) - 53 jobs
+        "everlaw",       # Everlaw (legal tech) - 33 jobs
+        "disco",         # DISCO (legal AI) - 31 jobs
+        "glossier",      # Glossier (beauty) - 20 jobs
+        "homelight",     # HomeLight (real estate) - 18 jobs
+        "autotrader",    # AutoTrader (car marketplace) - 13 jobs
+        "labelbox",      # Labelbox (data labeling) - 9 jobs
+        "watershed",     # Watershed (carbon accounting) - 8 jobs
+        "sas",           # SAS Institute (analytics) - 6 jobs
+        "bcg",           # Boston Consulting Group - 4 jobs
+        "binance",       # Binance (crypto exchange) - 1 job
+        "eve",           # Eve Sleep (UK mattress) - 32 jobs
+        "beam",          # Beam (benefits) - 9 jobs
     ],
     "lever": [
         # --- Verified Lever companies ---
@@ -437,6 +485,18 @@ CURATED_SEED = {
         "wealthfront",   # Wealthfront (robo-advisor) - 13 jobs
         "brilliant",     # Brilliant (math/science learning) - 3 jobs
         "straighterline", # StraighterLine (online courses) - 2 jobs
+
+        # --- Newly verified Lever companies (Jul 2026) ---
+        "saviynt",       # Saviynt (identity security) - 117 jobs
+        "acceldata",     # Acceldata (data observability) - 53 jobs
+        "appen",         # Appen (AI training data) - 52 jobs
+        "anchorage",     # Anchorage Digital (crypto) - 46 jobs
+        "matillion",     # Matillion (data integration) - 19 jobs
+        "pipedrive",     # Pipedrive (CRM) - 17 jobs
+        "people-ai",     # People.ai (revenue AI) - 9 jobs
+        "anomali",       # Anomali (threat intelligence) - 8 jobs
+        "immutable",     # Immutable (Web3 gaming) - 3 jobs
+        "topdesk",       # TOPdesk (ITSM) - 6 jobs
     ],
     "ashby": [
         # --- Verified Ashby companies (confirmed via API) ---
@@ -498,6 +558,35 @@ CURATED_SEED = {
         "found",         # Found (SMB banking) - 3 jobs
         "datafold",      # Datafold (data quality) - 1 job
         "tekton",        # Tekton (CI/CD) - 1 job
+
+        # --- Newly verified Ashby companies (Jul 2026) ---
+        "clickhouse",    # ClickHouse (analytics DB) - 171 jobs
+        "clickup",       # ClickUp (project mgmt) - 67 jobs
+        "docker",        # Docker (containers) - 53 jobs
+        "sentry",        # Sentry (error monitoring) - 48 jobs
+        "amplitude",     # Amplitude (product analytics) - 46 jobs
+        "miro",          # Miro (visual collaboration) - 43 jobs
+        "n8n",           # n8n (workflow automation) - 37 jobs
+        "elliptic",      # Elliptic (crypto compliance) - 33 jobs
+        "redis",         # Redis (in-memory DB) - 28 jobs
+        "midjourney",    # Midjourney (AI image gen) - 20 jobs
+        "alchemy",       # Alchemy (Web3 infra) - 17 jobs
+        "zapier",        # Zapier (automation) - 15 jobs
+        "insitro",       # Insitro (ML drug discovery) - 13 jobs
+        "mural",         # MURAL (visual collaboration) - 10 jobs
+        "helpscout",     # Help Scout (customer support) - 9 jobs
+        "atlan",         # Atlan (data workspace) - 5 jobs
+        "lightspeed",    # Lightspeed (commerce) - 5 jobs
+        "neptune",       # Neptune.ai (MLOps) - 4 jobs
+        "materialize",   # Materialize (streaming SQL) - 4 jobs
+        "chilipiper",    # Chili Piper (scheduling) - 3 jobs
+        "windmill",      # Windmill (dev platform) - 3 jobs
+        "flink",         # Flink (quick commerce) - 2 jobs
+        "prometheus",    # Prometheus (monitoring) - 2 jobs
+        "opensea",       # OpenSea (NFT marketplace) - 1 job
+        "delinea",       # Delinea (privileged access) - 62 jobs
+        "close",         # Close (CRM) - 7 jobs
+        "orca",          # Orca Security (cloud security) - 1 job
     ],
     "workable": [
         "doctolib", "klarna", "back-market", "alan", "swile",
@@ -517,6 +606,83 @@ CURATED_SEED = {
         " wefox", "raisin", "solarisbank", "getyourguide", "omio",
         "tier", "grover", "kontist", "pitch", "demodesk",
         "pipedrive", "bolt-eu", "wise-careers",
+    ],
+    "recruitee": [
+        # --- Confirmed Recruitee companies (verified via API) ---
+        "adjust",        # Adjust (mobile analytics) - 29 jobs
+        "holded",        # Holded (Spanish ERP) - 11 jobs
+        "personio",      # Personio (HR software) - 1 job
+        # --- Additional Recruitee companies (European tech/SaaS) ---
+        "teamviewer",    # TeamViewer (remote access)
+        "rewe-digital",  # REWE Digital (German retail tech)
+        "aboutyou",      # About You (fashion e-commerce)
+        "flixbus",       # FlixBus (intercity bus)
+        "idealo",        # Idealo (price comparison)
+        "mytheresa",     # Mytheresa (luxury fashion)
+        "searchie",      # Searchie (AI content)
+        "babbel",        # Babbel (language learning)
+        "ecosia",        # Ecosia (green search engine)
+        "thermondo",     # Thermondo (heating tech)
+        "raisin",        # Raisin (savings marketplace)
+        "smava",         # Smava (loan comparison)
+        "check24",       # Check24 (comparison portal)
+        "homeday",       # Homeday (real estate)
+        "clark",         # Clark (insurance)
+        "getsafe",       # GetSafe (digital insurance)
+        "wefox",         # Wefox (insurance)
+        "simplesurance", # Simplesurance (insurance)
+        "nuri",          # Nuri (crypto banking)
+        "penta",         # Penta (business banking)
+        "finiata",       # Finiata (SMB finance)
+        "billie",        # Billie (B2B BNPL)
+        "moss",          # Moss (expense management)
+        "agicap",        # Agicap (cash flow)
+        "candis",        # Candis (accounting)
+        "spendesk",      # Spendesk (spend management)
+        "gorillas",      # Gorillas (quick commerce)
+        "flink",         # Flink (quick commerce)
+        "relex",         # Relex Solutions (retail planning)
+        "commercetools", # commercetools (headless commerce)
+        "spryker",       # Spryker (e-commerce)
+        "contentful",    # Contentful (CMS)
+        "storyblok",     # Storyblok (headless CMS)
+        "hygraph",       # Hygraph (GraphQL CMS)
+        "sanity",        # Sanity (structured content)
+        "prismic",       # Prismic (headless CMS)
+        "sitecore",      # Sitecore (DXP)
+        "magnolia",      # Magnolia (CMS)
+        "kentico",       # Kentico (CMS)
+        "bloomreach",    # Bloomreach (commerce)
+        "emarsys",       # Emarsys (marketing)
+        "braze",         # Braze (customer engagement)
+        "insider",       # Insider (growth management)
+        "webengage",     # WebEngage (marketing)
+        "clevertap",     # CleverTap (analytics)
+        "leanplum",      # Leanplum (mobile marketing)
+        "airship",       # Airship (mobile engagement)
+        "pushwoosh",     # Pushwoosh (push notifications)
+        "onesignal",     # OneSignal (messaging)
+        "sendbird",      # Sendbird (chat API)
+        "stream",        # Stream (chat/feeds)
+        "twilio-segment",# Twilio Segment (CDP)
+        "mparticle",     # mParticle (CDP)
+        "rudderstack",   # RudderStack (CDP)
+        "hightouch",     # Hightouch (reverse ETL)
+        "census",        # Census (reverse ETL)
+        "fivetran",      # Fivetran (data integration)
+        "airbyte",       # Airbyte (data integration)
+        "stitch",        # Stitch (data pipeline)
+        "matillion",     # Matillion (data integration)
+        "talend",        # Talend (data integration)
+        "informatica",   # Informatica (data management)
+        "mulesoft",      # MuleSoft (integration)
+        "boomi",         # Boomi (integration)
+        "jitterbit",     # Jitterbit (integration)
+        "workato",       # Workato (automation)
+        "zapier",        # Zapier (automation)
+        "make",          # Make (automation)
+        "n8n",           # n8n (workflow automation)
+        "activepieces",  # Activepieces (automation)
     ],
     # Workday seeds are 'tenant|wdN|site' triples. Verified from public career pages.
     # Add more as you discover them by visiting a company's "Careers" page and
