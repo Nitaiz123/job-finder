@@ -185,6 +185,9 @@ ATS_PATTERNS = {
     "recruitee": [
         re.compile(r"([a-z0-9][a-z0-9\-]*)\.recruitee\.com", re.IGNORECASE),
     ],
+    "bamboohr": [
+        re.compile(r"([a-z0-9][a-z0-9\-]*)\.bamboohr\.com", re.IGNORECASE),
+    ],
     # Workday intentionally excluded from discovery: its compound tenant|host|site
     # slug can't be reliably inferred from a URL alone without verification.
 }

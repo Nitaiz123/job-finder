@@ -714,40 +714,108 @@ def fetch_jobvite(slug):
 
 def fetch_rippling(slug):
     """
-    Rippling public job board API.
+    Rippling ATS public job board API.
 
     Endpoint:
-      GET https://ats.rippling.com/api/v1/job_postings?company={slug}
+      GET https://ats.rippling.com/api/v1/board/{slug}/jobs
+
+    Returns a JSON array of job objects with keys:
+      uuid, name, department, url, workLocation
     """
-    url = f"https://ats.rippling.com/api/v1/job_postings"
-    params = {"company": slug, "status": "PUBLISHED"}
+    url = f"https://ats.rippling.com/api/v1/board/{slug}/jobs"
     try:
-        r = requests.get(url, headers=HEADERS, params=params, timeout=REQUEST_TIMEOUT)
+        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         if r.status_code != 200:
             return []
         data = r.json()
     except (requests.RequestException, ValueError):
         return []
 
+    if not isinstance(data, list):
+        return []
+
     jobs_out = []
-    postings = data if isinstance(data, list) else data.get("results", data.get("jobs", []))
-    for j in postings:
-        desc = _strip_html(j.get("description", "") or j.get("jobDescription", ""))
-        job_id = j.get("id", "") or j.get("jobId", "")
-        job_url = j.get("jobUrl") or j.get("applyUrl") or (
+    for j in data:
+        job_id = j.get("uuid", "")
+        job_url = j.get("url") or (
             f"https://ats.rippling.com/{slug}/jobs/{job_id}" if job_id else ""
         )
-        loc = j.get("location", "") or j.get("locationName", "")
+        loc = j.get("workLocation", {})
         if isinstance(loc, dict):
-            loc = ", ".join(p for p in [loc.get("city", ""), loc.get("state", ""), loc.get("country", "")] if p)
+            loc = loc.get("label", "")
+        dept = j.get("department", {})
+        if isinstance(dept, dict):
+            dept = dept.get("label", "")
         jobs_out.append({
             "company": slug,
             "ats": "rippling",
-            "title": j.get("title", "") or j.get("jobTitle", ""),
-            "location": str(loc),
+            "title": j.get("name", ""),
+            "location": str(loc or ""),
             "url": job_url,
-            "posted_at": _parse_iso(j.get("publishedAt") or j.get("createdAt")),
-            "department": j.get("department", "") or "",
+            "posted_at": None,
+            "department": str(dept or ""),
+            "description_snippet": "",
+            "description_full": "",
+        })
+    return jobs_out
+
+
+def fetch_bamboohr(slug):
+    """
+    BambooHR public careers JSON API.
+
+    Endpoint:
+      GET https://{slug}.bamboohr.com/careers/list
+
+    Returns a JSON object with a 'result' array of job objects.
+    """
+    url = f"https://{slug}.bamboohr.com/careers/list"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        if r.status_code != 200:
+            return []
+        ct = r.headers.get("content-type", "")
+        text = r.text.strip()
+        if "json" not in ct and not (text.startswith("{") or text.startswith("[")):
+            return []
+        data = r.json()
+    except (requests.RequestException, ValueError):
+        return []
+
+    postings = data.get("result", [])
+    if not isinstance(postings, list):
+        return []
+
+    jobs_out = []
+    for j in postings:
+        job_id = j.get("id", "")
+        job_url = j.get("url") or (
+            f"https://{slug}.bamboohr.com/careers/{job_id}" if job_id else ""
+        )
+        loc = j.get("location", {}) or {}
+        if isinstance(loc, dict):
+            city = loc.get("city", "")
+            state = loc.get("state", "")
+            country = loc.get("country", "")
+            loc = ", ".join(p for p in [city, state, country] if p)
+        dept = j.get("department", {}) or {}
+        if isinstance(dept, dict):
+            dept = dept.get("label", "")
+        desc = _strip_html(j.get("description", "") or "")
+        title = j.get("jobOpeningName") or j.get("title", "")
+        if isinstance(title, dict):
+            title = title.get("label", "")
+        dept = j.get("departmentLabel") or j.get("department", "")
+        if isinstance(dept, dict):
+            dept = dept.get("label", "")
+        jobs_out.append({
+            "company": slug,
+            "ats": "bamboohr",
+            "title": str(title or ""),
+            "location": str(loc or ""),
+            "url": job_url,
+            "posted_at": _parse_iso(j.get("datePosted") or j.get("updatedDate")),
+            "department": str(dept or ""),
             "description_snippet": desc[:500],
             "description_full": desc,
         })
@@ -757,6 +825,7 @@ def fetch_rippling(slug):
 FETCHERS["smartrecruiters"] = fetch_smartrecruiters
 FETCHERS["jobvite"] = fetch_jobvite
 FETCHERS["rippling"] = fetch_rippling
+FETCHERS["bamboohr"] = fetch_bamboohr
 
 
 def fetch_amazon(slug="amazon"):

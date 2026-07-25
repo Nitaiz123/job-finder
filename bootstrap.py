@@ -55,6 +55,12 @@ ATS_PATTERNS = {
     "recruitee": [
         re.compile(r"([a-z0-9][a-z0-9\-]*)\.recruitee\.com", re.IGNORECASE),
     ],
+    "bamboohr": [
+        re.compile(r"([a-z0-9][a-z0-9\-]*)\.bamboohr\.com", re.IGNORECASE),
+    ],
+    "rippling": [
+        re.compile(r"ats\.rippling\.com/([a-z0-9][a-z0-9\-]*)/jobs", re.IGNORECASE),
+    ],
     # Workday: captures (tenant, wdN, site) from URLs like:
     #   https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/...
     #   https://salesforce.wd1.myworkdayjobs.com/External_Career_Site/...
@@ -434,6 +440,77 @@ CURATED_SEED = {
         "binance",       # Binance (crypto exchange) - 1 job
         "eve",           # Eve Sleep (UK mattress) - 32 jobs
         "beam",          # Beam (benefits) - 9 jobs
+
+        # --- Newly verified Greenhouse companies (Jul 2026 batch 2) ---
+        # Massive data/cloud platforms
+        "databricks",    # Databricks (data+AI) - 800 jobs
+        "datadog",       # Datadog (monitoring) - 418 jobs
+        "mongodb",       # MongoDB (NoSQL DB) - 401 jobs
+        "sumup",         # SumUp (payments) - 377 jobs
+        "okta",          # Okta (identity) - 352 jobs
+        "toast",         # Toast (restaurant tech) - 305 jobs
+        "zscaler",       # Zscaler (cloud security) - 305 jobs
+        "cloudflare",    # Cloudflare (network security) - 271 jobs
+        "braze",         # Braze (customer engagement) - 235 jobs
+        "adyen",         # Adyen (payments) - 213 jobs
+        "elastic",       # Elastic (search/analytics) - 204 jobs
+        "fivetran",      # Fivetran (data integration) - 195 jobs
+        "tripactions",   # TripActions/Navan (travel) - 192 jobs
+        "gitlab",        # GitLab (DevOps) - 187 jobs
+        "twilio",        # Twilio (communications) - 182 jobs
+        "affirm",        # Affirm (BNPL) - 174 jobs
+        "sezzle",        # Sezzle (BNPL) - 171 jobs
+        "klaviyo",       # Klaviyo (email marketing) - 152 jobs
+        "asana",         # Asana (project mgmt) - 148 jobs
+        "workato",       # Workato (integration) - 145 jobs
+        "payoneer",      # Payoneer (payments) - 132 jobs
+        "intercom",      # Intercom (customer comms) - 130 jobs
+        "instacart",     # Instacart (grocery delivery) - 122 jobs
+        "justworks",     # Justworks (HR/payroll) - 96 jobs
+        "monzo",         # Monzo (neobank UK) - 76 jobs
+        "n26",           # N26 (neobank EU) - 76 jobs
+        "wrike",         # Wrike (project mgmt) - 72 jobs
+        "chime",         # Chime (neobank) - 67 jobs
+        "carta",         # Carta (equity mgmt) - 64 jobs
+        "sofi",          # SoFi (fintech) - 63 jobs
+        "duolingo",      # Duolingo (language learning) - 60 jobs
+        "vonage",        # Vonage (communications) - 59 jobs
+        "pandadoc",      # PandaDoc (docs/esign) - 54 jobs
+        "newrelic",      # New Relic (observability) - 53 jobs
+        "fastly",        # Fastly (CDN) - 48 jobs
+        "cloudbeds",     # Cloudbeds (hospitality) - 48 jobs
+        "mixpanel",      # Mixpanel (analytics) - 44 jobs
+        "gemini",        # Gemini (crypto exchange) - 44 jobs
+        "ivalua",        # Ivalua (procurement) - 43 jobs
+        "betterment",    # Betterment (robo-advisor) - 41 jobs
+        "tanium",        # Tanium (endpoint security) - 41 jobs
+        "airtable",      # Airtable (no-code DB) - 38 jobs
+        "6sense",        # 6sense (revenue AI) - 37 jobs
+        "zuora",         # Zuora (subscription billing) - 37 jobs
+        "jfrog",         # JFrog (DevOps) - 35 jobs
+        "gofundme",      # GoFundMe (crowdfunding) - 35 jobs
+        "pantheon",      # Pantheon (WebOps) - 33 jobs
+        "dropbox",       # Dropbox (file storage) - 30 jobs
+        "bandwidth",     # Bandwidth (communications) - 29 jobs
+        "contentful",    # Contentful (headless CMS) - 28 jobs
+        "salesloft",     # Salesloft (sales engagement) - 27 jobs
+        "webflow",       # Webflow (no-code web) - 26 jobs
+        "iterable",      # Iterable (cross-channel marketing) - 24 jobs
+        "airship",       # Airship (mobile engagement) - 19 jobs
+        "veracode",      # Veracode (app security) - 18 jobs
+        "pagerduty",     # PagerDuty (incident mgmt) - 18 jobs
+        "udacity",       # Udacity (tech education) - 17 jobs
+        "make",          # Make (automation, ex-Integromat) - 17 jobs
+        "sendbird",      # Sendbird (chat/video API) - 17 jobs
+        "squarespace",   # Squarespace (website builder) - 16 jobs
+        "coursera",      # Coursera (online learning) - 12 jobs
+        "amwell",        # Amwell (telehealth) - 12 jobs
+        "typeform",      # Typeform (forms) - 10 jobs
+        "udemy",         # Udemy (online courses) - 8 jobs
+        "planetscale",   # PlanetScale (MySQL platform) - 8 jobs
+        "sisense",       # Sisense (BI analytics) - 5 jobs
+        "netlify",       # Netlify (web hosting) - 4 jobs
+        "masterclass",   # MasterClass (online learning) - 2 jobs
     ],
     "lever": [
         # --- Verified Lever companies ---
@@ -497,6 +574,13 @@ CURATED_SEED = {
         "anomali",       # Anomali (threat intelligence) - 8 jobs
         "immutable",     # Immutable (Web3 gaming) - 3 jobs
         "topdesk",       # TOPdesk (ITSM) - 6 jobs
+
+        # --- Newly verified Lever companies (Jul 2026 batch 2) ---
+        "palantir",      # Palantir (data analytics) - 287 jobs
+        "coupa",         # Coupa (business spend mgmt) - 108 jobs
+        "sophos",        # Sophos (cybersecurity) - 108 jobs
+        "ro",            # Ro (telehealth) - 51 jobs
+        "activecampaign", # ActiveCampaign (marketing) - 13 jobs
     ],
     "ashby": [
         # --- Verified Ashby companies (confirmed via API) ---
@@ -1122,18 +1206,59 @@ CURATED_SEED = {
     "google": ["google"],
     # Meta: uses Greenhouse for engineering roles
     # (metacareers.com blocks bots; Greenhouse board is publicly accessible)
-    # Rippling: fast-growing ATS used by many startups.
+    # Rippling ATS: correct API is GET https://ats.rippling.com/api/v1/board/{slug}/jobs
     "rippling": [
-        "rippling", "brex", "ramp", "mercury", "pilot",
-        "gusto", "justworks", "bamboohr", "lattice", "culture-amp",
-        "15five", "betterup", "modernhealth", "lyrahealth",
-        "headspace", "calm", "noom", "ro", "hims",
-        "faire", "glossier", "allbirds", "warbyparker", "casper",
-        "peloton", "mirror", "tonal", "whoop", "ouraring",
-        "duolingo", "coursera", "masterclass", "chegg", "udemy",
-        "notion", "coda", "airtable", "clickup", "monday",
-        "figma", "miro", "loom", "frame", "pitch",
-        "linear", "shortcut", "height", "plane", "jira",
+        "rippling",      # Rippling (HR/payroll) - 827 jobs
+        "opendoor",      # Opendoor (real estate) - 68 jobs
+        "malwarebytes",  # Malwarebytes (security) - 45 jobs
+        "thoughtspot",   # ThoughtSpot (analytics) - 51 jobs
+        "copado",        # Copado (DevOps) - 28 jobs
+        "agora",         # Agora (real-time engagement) - 17 jobs
+        "conductor",     # Conductor (SEO) - 16 jobs
+        "esper",         # Esper (device mgmt) - 12 jobs
+        "shippo",        # Shippo (shipping API) - 8 jobs
+        "swimlane",      # Swimlane (security automation) - 7 jobs
+        "xplor",         # Xplor (payments) - 6 jobs
+        "bonusly",       # Bonusly (employee recognition) - 6 jobs
+        "invision",      # InVision (design) - 6 jobs
+        "freshworks",    # Freshworks (SaaS) - 1 job
+        "sentry",        # Sentry (error monitoring) - 3 jobs
+        "smartly",       # Smartly.io (social ads) - 3 jobs
+        "vividly",       # Vividly (trade promotion) - 2 jobs
+        "greenhouse",    # Greenhouse Software - 1 job
+        "kion",          # Kion (cloud governance) - 1 job
+        "devo",          # Devo (cloud-native SIEM)
+        "elevate",       # Elevate Security
+        "evervault",     # Evervault (encryption)
+        "galileo",       # Galileo (financial tech)
+        "nylas",         # Nylas (email/calendar API)
+        "totango",       # Totango (customer success)
+    ],
+    # BambooHR: clean JSON API at {slug}.bamboohr.com/careers/list
+    "bamboohr": [
+        "okta",          # Okta (identity) - 4 jobs
+        "coda",          # Coda (docs) - 1 job
+        "linear",        # Linear (project mgmt)
+        "basecamp",      # Basecamp (project mgmt)
+        "medium",        # Medium (publishing)
+        "quora",         # Quora (Q&A)
+        "asana",         # Asana (project mgmt)
+        "blockfi",       # BlockFi (crypto)
+        "guardian",      # Guardian (news)
+        "bunq",          # Bunq (neobank)
+        "nexo",          # Nexo (crypto)
+        "celsius",       # Celsius (crypto)
+        "varo",          # Varo (neobank)
+        "vectra",        # Vectra (AI security)
+        "afp",           # AFP (news agency)
+        "pulumi",        # Pulumi (infrastructure as code)
+        "docker",        # Docker (containers)
+        "algolia",       # Algolia (search)
+        "scale",         # Scale AI (data labeling)
+        "vercel",        # Vercel (web hosting)
+        "netlify",       # Netlify (web hosting)
+        "cohere",        # Cohere (LLM)
+        "openai",        # OpenAI (AI)
     ],
 }
 
