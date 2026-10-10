@@ -1,0 +1,1340 @@
+{
+  "icims|epeconsulting": {
+    "ats": "icims",
+    "slug": "epeconsulting",
+    "attempts": 1,
+    "first_seen": "2026-05-30T13:43:44.225543+00:00"
+  },
+  "icims|careers-epeconsulting": {
+    "ats": "icims",
+    "slug": "careers-epeconsulting",
+    "attempts": 1,
+    "first_seen": "2026-05-30T13:43:48.601175+00:00"
+  },
+  "icims|careers-melaleuca": {
+    "ats": "icims",
+    "slug": "careers-melaleuca",
+    "attempts": 2,
+    "first_seen": "2026-06-01T21:35:44.638285+00:00"
+  },
+  "icims|careers-psaairlines": {
+    "ats": "icims",
+    "slug": "careers-psaairlines",
+    "attempts": 3,
+    "first_seen": "2026-06-05T09:36:18.125593+00:00"
+  },
+  "ashby|preference": {
+    "ats": "ashby",
+    "slug": "preference",
+    "attempts": 2,
+    "first_seen": "2026-06-05T09:36:18.324100+00:00"
+  },
+  "rippling|omnis-corporation": {
+    "ats": "rippling",
+    "slug": "omnis-corporation",
+    "attempts": 1,
+    "first_seen": "2026-06-05T09:36:18.840985+00:00"
+  },
+  "icims|globalcareers-gmfinancial": {
+    "ats": "icims",
+    "slug": "globalcareers-gmfinancial",
+    "attempts": 1,
+    "first_seen": "2026-06-05T23:12:17.645774+00:00"
+  },
+  "icims|gmfinancial": {
+    "ats": "icims",
+    "slug": "gmfinancial",
+    "attempts": 1,
+    "first_seen": "2026-06-05T23:12:17.913575+00:00"
+  },
+  "lever|journee": {
+    "ats": "lever",
+    "slug": "journee",
+    "attempts": 1,
+    "first_seen": "2026-06-05T23:12:17.982294+00:00"
+  },
+  "icims|walterpmoore": {
+    "ats": "icims",
+    "slug": "walterpmoore",
+    "attempts": 4,
+    "first_seen": "2026-06-06T17:17:53.540775+00:00"
+  },
+  "icims|external-telecom-teldta": {
+    "ats": "icims",
+    "slug": "external-telecom-teldta",
+    "attempts": 4,
+    "first_seen": "2026-06-06T17:17:54.403987+00:00"
+  },
+  "icims|fhcrc": {
+    "ats": "icims",
+    "slug": "fhcrc",
+    "attempts": 4,
+    "first_seen": "2026-06-06T17:17:54.470493+00:00"
+  },
+  "icims|sri": {
+    "ats": "icims",
+    "slug": "sri",
+    "attempts": 4,
+    "first_seen": "2026-06-06T17:17:54.728431+00:00"
+  },
+  "icims|americansystems": {
+    "ats": "icims",
+    "slug": "americansystems",
+    "attempts": 3,
+    "first_seen": "2026-06-06T19:26:50.099391+00:00"
+  },
+  "icims|here": {
+    "ats": "icims",
+    "slug": "here",
+    "attempts": 3,
+    "first_seen": "2026-06-06T19:26:50.438712+00:00"
+  },
+  "icims|main-princeton": {
+    "ats": "icims",
+    "slug": "main-princeton",
+    "attempts": 2,
+    "first_seen": "2026-06-06T21:07:31.336553+00:00"
+  },
+  "icims|careers-walterpmoore": {
+    "ats": "icims",
+    "slug": "careers-walterpmoore",
+    "attempts": 3,
+    "first_seen": "2026-06-07T21:16:18.388522+00:00"
+  },
+  "icims|careers-fhcrc": {
+    "ats": "icims",
+    "slug": "careers-fhcrc",
+    "attempts": 2,
+    "first_seen": "2026-06-08T18:29:51.635884+00:00"
+  },
+  "icims|careers-werfen": {
+    "ats": "icims",
+    "slug": "careers-werfen",
+    "attempts": 4,
+    "first_seen": "2026-06-08T21:51:49.262369+00:00"
+  },
+  "icims|careers-wellpath": {
+    "ats": "icims",
+    "slug": "careers-wellpath",
+    "attempts": 4,
+    "first_seen": "2026-06-08T23:13:02.595863+00:00"
+  },
+  "icims|wellpath": {
+    "ats": "icims",
+    "slug": "wellpath",
+    "attempts": 4,
+    "first_seen": "2026-06-08T23:13:03.046002+00:00"
+  },
+  "icims|careers-here": {
+    "ats": "icims",
+    "slug": "careers-here",
+    "attempts": 1,
+    "first_seen": "2026-06-10T15:39:33.380455+00:00"
+  },
+  "icims|careers-e2": {
+    "ats": "icims",
+    "slug": "careers-e2",
+    "attempts": 3,
+    "first_seen": "2026-06-12T03:33:41.632876+00:00"
+  },
+  "icims|e2": {
+    "ats": "icims",
+    "slug": "e2",
+    "attempts": 3,
+    "first_seen": "2026-06-12T03:33:41.982522+00:00"
+  },
+  "icims|careers-brewers": {
+    "ats": "icims",
+    "slug": "careers-brewers",
+    "attempts": 2,
+    "first_seen": "2026-06-13T08:50:16.072218+00:00"
+  },
+  "icims|brewers": {
+    "ats": "icims",
+    "slug": "brewers",
+    "attempts": 2,
+    "first_seen": "2026-06-13T08:50:16.393175+00:00"
+  },
+  "careerpuck|anine-bing": {
+    "ats": "careerpuck",
+    "slug": "anine-bing",
+    "attempts": 4,
+    "first_seen": "2026-06-13T17:25:25.920986+00:00"
+  },
+  "careerpuck|chorus": {
+    "ats": "careerpuck",
+    "slug": "chorus",
+    "attempts": 4,
+    "first_seen": "2026-06-20T17:27:45.006946+00:00"
+  },
+  "icims|beyondsoft": {
+    "ats": "icims",
+    "slug": "beyondsoft",
+    "attempts": 3,
+    "first_seen": "2026-06-20T19:40:25.455563+00:00"
+  },
+  "icims|persistentsystems": {
+    "ats": "icims",
+    "slug": "persistentsystems",
+    "attempts": 2,
+    "first_seen": "2026-06-20T21:19:59.177383+00:00"
+  },
+  "icims|careers-quinngroup": {
+    "ats": "icims",
+    "slug": "careers-quinngroup",
+    "attempts": 4,
+    "first_seen": "2026-06-25T23:20:38.868291+00:00"
+  },
+  "icims|quinngroup": {
+    "ats": "icims",
+    "slug": "quinngroup",
+    "attempts": 4,
+    "first_seen": "2026-06-25T23:20:38.870497+00:00"
+  },
+  "lever|nuvoair": {
+    "ats": "lever",
+    "slug": "nuvoair",
+    "attempts": 1,
+    "first_seen": "2026-06-26T14:29:02.451232+00:00"
+  },
+  "icims|vhb": {
+    "ats": "icims",
+    "slug": "vhb",
+    "attempts": 4,
+    "first_seen": "2026-06-27T17:12:52.286462+00:00"
+  },
+  "icims|jobs-legrand": {
+    "ats": "icims",
+    "slug": "jobs-legrand",
+    "attempts": 1,
+    "first_seen": "2026-06-27T23:04:08.222510+00:00"
+  },
+  "icims|magaero": {
+    "ats": "icims",
+    "slug": "magaero",
+    "attempts": 1,
+    "first_seen": "2026-06-27T23:04:08.895501+00:00"
+  },
+  "rippling|enludio-careers": {
+    "ats": "rippling",
+    "slug": "enludio-careers",
+    "attempts": 3,
+    "first_seen": "2026-06-30T20:07:47.580899+00:00"
+  },
+  "icims|steampunk": {
+    "ats": "icims",
+    "slug": "steampunk",
+    "attempts": 2,
+    "first_seen": "2026-07-04T21:00:01.158578+00:00"
+  },
+  "icims|i3-corps": {
+    "ats": "icims",
+    "slug": "i3-corps",
+    "attempts": 2,
+    "first_seen": "2026-07-04T21:00:01.333675+00:00"
+  },
+  "icims|vch": {
+    "ats": "icims",
+    "slug": "vch",
+    "attempts": 2,
+    "first_seen": "2026-07-04T21:00:01.352752+00:00"
+  },
+  "icims|tatitlek": {
+    "ats": "icims",
+    "slug": "tatitlek",
+    "attempts": 2,
+    "first_seen": "2026-07-04T21:00:01.388248+00:00"
+  },
+  "icims|officejobs-truemfg": {
+    "ats": "icims",
+    "slug": "officejobs-truemfg",
+    "attempts": 3,
+    "first_seen": "2026-07-09T02:35:36.034630+00:00"
+  },
+  "icims|uscareers-fujifilm": {
+    "ats": "icims",
+    "slug": "uscareers-fujifilm",
+    "attempts": 1,
+    "first_seen": "2026-07-09T02:35:36.049786+00:00"
+  },
+  "icims|fujifilm": {
+    "ats": "icims",
+    "slug": "fujifilm",
+    "attempts": 1,
+    "first_seen": "2026-07-09T02:35:36.455456+00:00"
+  },
+  "lever|quantco": {
+    "ats": "lever",
+    "slug": "quantco",
+    "attempts": 2,
+    "first_seen": "2026-07-09T09:26:33.601662+00:00"
+  },
+  "lever|symmetrysystems": {
+    "ats": "lever",
+    "slug": "symmetrysystems",
+    "attempts": 2,
+    "first_seen": "2026-07-09T09:26:34.185727+00:00"
+  },
+  "icims|gd-ots": {
+    "ats": "icims",
+    "slug": "gd-ots",
+    "attempts": 4,
+    "first_seen": "2026-07-10T03:31:54.321026+00:00"
+  },
+  "icims|careers-gd-ots": {
+    "ats": "icims",
+    "slug": "careers-gd-ots",
+    "attempts": 4,
+    "first_seen": "2026-07-10T03:31:54.781239+00:00"
+  },
+  "icims|hsg-harvard": {
+    "ats": "icims",
+    "slug": "hsg-harvard",
+    "attempts": 1,
+    "first_seen": "2026-07-15T13:47:14.219592+00:00"
+  },
+  "icims|hmi-harvard": {
+    "ats": "icims",
+    "slug": "hmi-harvard",
+    "attempts": 1,
+    "first_seen": "2026-07-15T13:47:14.568393+00:00"
+  },
+  "icims|calamp": {
+    "ats": "icims",
+    "slug": "calamp",
+    "attempts": 2,
+    "first_seen": "2026-07-18T20:51:56.732032+00:00"
+  },
+  "ashby|whatnot": {
+    "ats": "ashby",
+    "slug": "whatnot",
+    "attempts": 1,
+    "first_seen": "2026-07-18T22:52:32.812766+00:00"
+  },
+  "careerpuck|surventis-coatings": {
+    "ats": "careerpuck",
+    "slug": "surventis-coatings",
+    "attempts": 1,
+    "first_seen": "2026-07-18T22:52:33.142893+00:00"
+  },
+  "icims|careers-magaero": {
+    "ats": "icims",
+    "slug": "careers-magaero",
+    "attempts": 1,
+    "first_seen": "2026-07-21T21:11:54.791586+00:00"
+  },
+  "icims|careers-tatitlek": {
+    "ats": "icims",
+    "slug": "careers-tatitlek",
+    "attempts": 2,
+    "first_seen": "2026-07-22T02:12:05.320891+00:00"
+  },
+  "icims|careers-calamp": {
+    "ats": "icims",
+    "slug": "careers-calamp",
+    "attempts": 4,
+    "first_seen": "2026-07-22T21:10:29.874469+00:00"
+  },
+  "rippling|conceptplus": {
+    "ats": "rippling",
+    "slug": "conceptplus",
+    "attempts": 4,
+    "first_seen": "2026-07-22T21:10:29.994797+00:00"
+  },
+  "rippling|edgehog-trading": {
+    "ats": "rippling",
+    "slug": "edgehog-trading",
+    "attempts": 1,
+    "first_seen": "2026-07-23T08:17:53.132636+00:00"
+  },
+  "icims|careers-kinaxis": {
+    "ats": "icims",
+    "slug": "careers-kinaxis",
+    "attempts": 1,
+    "first_seen": "2026-07-24T08:13:27.724008+00:00"
+  },
+  "icims|kinaxis": {
+    "ats": "icims",
+    "slug": "kinaxis",
+    "attempts": 1,
+    "first_seen": "2026-07-24T08:13:27.873605+00:00"
+  },
+  "icims|careers-jobyaviation": {
+    "ats": "icims",
+    "slug": "careers-jobyaviation",
+    "attempts": 4,
+    "first_seen": "2026-07-25T03:07:40.755934+00:00"
+  },
+  "icims|jobyaviation": {
+    "ats": "icims",
+    "slug": "jobyaviation",
+    "attempts": 4,
+    "first_seen": "2026-07-25T03:07:41.457825+00:00"
+  },
+  "icims|iridium": {
+    "ats": "icims",
+    "slug": "iridium",
+    "attempts": 2,
+    "first_seen": "2026-07-25T20:54:56.134339+00:00"
+  },
+  "icims|dewberry": {
+    "ats": "icims",
+    "slug": "dewberry",
+    "attempts": 1,
+    "first_seen": "2026-07-25T22:57:16.562512+00:00"
+  },
+  "icims|careers-vch": {
+    "ats": "icims",
+    "slug": "careers-vch",
+    "attempts": 3,
+    "first_seen": "2026-07-27T17:43:45.717787+00:00"
+  },
+  "icims|careers-bocusa": {
+    "ats": "icims",
+    "slug": "careers-bocusa",
+    "attempts": 1,
+    "first_seen": "2026-07-29T14:13:16.005153+00:00"
+  },
+  "icims|bocusa": {
+    "ats": "icims",
+    "slug": "bocusa",
+    "attempts": 1,
+    "first_seen": "2026-07-29T14:13:16.051479+00:00"
+  },
+  "icims|careers-beyondsoft": {
+    "ats": "icims",
+    "slug": "careers-beyondsoft",
+    "attempts": 3,
+    "first_seen": "2026-07-29T19:19:19.633399+00:00"
+  },
+  "icims|careers-dewberry": {
+    "ats": "icims",
+    "slug": "careers-dewberry",
+    "attempts": 2,
+    "first_seen": "2026-07-30T19:28:16.041455+00:00"
+  },
+  "icims|careers-uwcu": {
+    "ats": "icims",
+    "slug": "careers-uwcu",
+    "attempts": 4,
+    "first_seen": "2026-07-30T23:09:09.561053+00:00"
+  },
+  "icims|uwcu": {
+    "ats": "icims",
+    "slug": "uwcu",
+    "attempts": 4,
+    "first_seen": "2026-07-30T23:09:10.089865+00:00"
+  },
+  "icims|bluehawk": {
+    "ats": "icims",
+    "slug": "bluehawk",
+    "attempts": 4,
+    "first_seen": "2026-08-01T17:02:35.918171+00:00"
+  },
+  "careerpuck|premier-event-venue": {
+    "ats": "careerpuck",
+    "slug": "premier-event-venue",
+    "attempts": 3,
+    "first_seen": "2026-08-01T19:10:39.751991+00:00"
+  },
+  "ashby|chainlink-labs": {
+    "ats": "ashby",
+    "slug": "chainlink-labs",
+    "attempts": 1,
+    "first_seen": "2026-08-01T20:54:29.707077+00:00"
+  },
+  "icims|rambus": {
+    "ats": "icims",
+    "slug": "rambus",
+    "attempts": 1,
+    "first_seen": "2026-08-01T22:57:06.723681+00:00"
+  },
+  "careerpuck|chorus-ai": {
+    "ats": "careerpuck",
+    "slug": "chorus-ai",
+    "attempts": 4,
+    "first_seen": "2026-08-08T16:35:39.890548+00:00"
+  },
+  "eightfold|qualcomm": {
+    "ats": "eightfold",
+    "slug": "qualcomm",
+    "attempts": 2,
+    "first_seen": "2026-08-08T20:31:33.843897+00:00"
+  },
+  "ashby|xterra": {
+    "ats": "ashby",
+    "slug": "xterra",
+    "attempts": 3,
+    "first_seen": "2026-08-13T04:07:29.243910+00:00"
+  },
+  "icims|riversideresearch": {
+    "ats": "icims",
+    "slug": "riversideresearch",
+    "attempts": 2,
+    "first_seen": "2026-08-14T07:14:30.378445+00:00"
+  },
+  "icims|kimley-horn": {
+    "ats": "icims",
+    "slug": "kimley-horn",
+    "attempts": 4,
+    "first_seen": "2026-08-15T16:26:36.882368+00:00"
+  },
+  "icims|berrydunn": {
+    "ats": "icims",
+    "slug": "berrydunn",
+    "attempts": 4,
+    "first_seen": "2026-08-15T16:26:37.405224+00:00"
+  },
+  "careerpuck|vivrelle-ats-demo": {
+    "ats": "careerpuck",
+    "slug": "vivrelle-ats-demo",
+    "attempts": 1,
+    "first_seen": "2026-08-15T22:23:11.420380+00:00"
+  },
+  "icims|analysisgroup": {
+    "ats": "icims",
+    "slug": "analysisgroup",
+    "attempts": 1,
+    "first_seen": "2026-08-15T22:23:11.560687+00:00"
+  },
+  "icims|knowledgeservices": {
+    "ats": "icims",
+    "slug": "knowledgeservices",
+    "attempts": 1,
+    "first_seen": "2026-08-15T22:23:11.618305+00:00"
+  },
+  "icims|analystcareers-analysisgroup": {
+    "ats": "icims",
+    "slug": "analystcareers-analysisgroup",
+    "attempts": 1,
+    "first_seen": "2026-08-15T22:23:11.634742+00:00"
+  },
+  "icims|careers-i3-corps": {
+    "ats": "icims",
+    "slug": "careers-i3-corps",
+    "attempts": 4,
+    "first_seen": "2026-08-17T06:39:04.246277+00:00"
+  },
+  "icims|careers-kimley-horn": {
+    "ats": "icims",
+    "slug": "careers-kimley-horn",
+    "attempts": 1,
+    "first_seen": "2026-08-18T12:49:23.439841+00:00"
+  },
+  "icims|careers-cpicardgroup": {
+    "ats": "icims",
+    "slug": "careers-cpicardgroup",
+    "attempts": 3,
+    "first_seen": "2026-08-20T02:52:25.937463+00:00"
+  },
+  "icims|cpicardgroup": {
+    "ats": "icims",
+    "slug": "cpicardgroup",
+    "attempts": 3,
+    "first_seen": "2026-08-20T02:52:26.279608+00:00"
+  },
+  "icims|careers-magnera": {
+    "ats": "icims",
+    "slug": "careers-magnera",
+    "attempts": 1,
+    "first_seen": "2026-08-20T12:52:22.968070+00:00"
+  },
+  "icims|magnera": {
+    "ats": "icims",
+    "slug": "magnera",
+    "attempts": 1,
+    "first_seen": "2026-08-20T12:52:23.212472+00:00"
+  },
+  "greenhouse|eventsandinterns": {
+    "ats": "greenhouse",
+    "slug": "eventsandinterns",
+    "attempts": 4,
+    "first_seen": "2026-08-21T02:58:25.390581+00:00"
+  },
+  "icims|careers-rambus": {
+    "ats": "icims",
+    "slug": "careers-rambus",
+    "attempts": 3,
+    "first_seen": "2026-08-21T18:38:10.025113+00:00"
+  },
+  "icims|springswindowfashions": {
+    "ats": "icims",
+    "slug": "springswindowfashions",
+    "attempts": 4,
+    "first_seen": "2026-08-22T16:26:13.332215+00:00"
+  },
+  "icims|jobs-woodcons": {
+    "ats": "icims",
+    "slug": "jobs-woodcons",
+    "attempts": 2,
+    "first_seen": "2026-08-22T20:24:18.342735+00:00"
+  },
+  "icims|mercuryinsurance": {
+    "ats": "icims",
+    "slug": "mercuryinsurance",
+    "attempts": 1,
+    "first_seen": "2026-08-22T22:23:18.720317+00:00"
+  },
+  "icims|careers-mercuryinsurance": {
+    "ats": "icims",
+    "slug": "careers-mercuryinsurance",
+    "attempts": 3,
+    "first_seen": "2026-08-24T01:01:27.686793+00:00"
+  },
+  "icims|sargentlundy": {
+    "ats": "icims",
+    "slug": "sargentlundy",
+    "attempts": 2,
+    "first_seen": "2026-08-27T17:11:48.316805+00:00"
+  },
+  "icims|careers-sargentlundy": {
+    "ats": "icims",
+    "slug": "careers-sargentlundy",
+    "attempts": 2,
+    "first_seen": "2026-08-27T17:11:48.362308+00:00"
+  },
+  "icims|careers-persistentsystems": {
+    "ats": "icims",
+    "slug": "careers-persistentsystems",
+    "attempts": 3,
+    "first_seen": "2026-08-28T08:47:29.075865+00:00"
+  },
+  "icims|careers-eastpennmanufacturing": {
+    "ats": "icims",
+    "slug": "careers-eastpennmanufacturing",
+    "attempts": 2,
+    "first_seen": "2026-08-28T17:58:33.985670+00:00"
+  },
+  "icims|eastpennmanufacturing": {
+    "ats": "icims",
+    "slug": "eastpennmanufacturing",
+    "attempts": 2,
+    "first_seen": "2026-08-28T17:58:34.046619+00:00"
+  },
+  "icims|careersen-mackenzieinvestments": {
+    "ats": "icims",
+    "slug": "careersen-mackenzieinvestments",
+    "attempts": 4,
+    "first_seen": "2026-08-29T12:04:51.344744+00:00"
+  },
+  "icims|empowerai": {
+    "ats": "icims",
+    "slug": "empowerai",
+    "attempts": 3,
+    "first_seen": "2026-08-29T16:22:17.259844+00:00"
+  },
+  "careerpuck|nclusion": {
+    "ats": "careerpuck",
+    "slug": "nclusion",
+    "attempts": 2,
+    "first_seen": "2026-08-29T20:34:37.486324+00:00"
+  },
+  "icims|empiricalfoods": {
+    "ats": "icims",
+    "slug": "empiricalfoods",
+    "attempts": 2,
+    "first_seen": "2026-08-29T20:34:37.774090+00:00"
+  },
+  "icims|career-schwab": {
+    "ats": "icims",
+    "slug": "career-schwab",
+    "attempts": 1,
+    "first_seen": "2026-08-29T23:56:14.965869+00:00"
+  },
+  "icims|daktronics": {
+    "ats": "icims",
+    "slug": "daktronics",
+    "attempts": 1,
+    "first_seen": "2026-08-29T23:56:15.245150+00:00"
+  },
+  "icims|careers-knowledgeservices": {
+    "ats": "icims",
+    "slug": "careers-knowledgeservices",
+    "attempts": 4,
+    "first_seen": "2026-08-30T20:43:04.370407+00:00"
+  },
+  "icims|careers-empowerai": {
+    "ats": "icims",
+    "slug": "careers-empowerai",
+    "attempts": 4,
+    "first_seen": "2026-09-01T20:42:51.199711+00:00"
+  },
+  "icims|careers-berrydunn": {
+    "ats": "icims",
+    "slug": "careers-berrydunn",
+    "attempts": 2,
+    "first_seen": "2026-09-03T10:30:14.336000+00:00"
+  },
+  "icims|steeldynamics": {
+    "ats": "icims",
+    "slug": "steeldynamics",
+    "attempts": 4,
+    "first_seen": "2026-09-05T14:46:39.532198+00:00"
+  },
+  "eightfold|johndeere": {
+    "ats": "eightfold",
+    "slug": "johndeere",
+    "attempts": 3,
+    "first_seen": "2026-09-05T17:58:57.028059+00:00"
+  },
+  "icims|americas": {
+    "ats": "icims",
+    "slug": "americas",
+    "attempts": 3,
+    "first_seen": "2026-09-05T17:58:57.523164+00:00"
+  },
+  "icims|westernsouthern": {
+    "ats": "icims",
+    "slug": "westernsouthern",
+    "attempts": 3,
+    "first_seen": "2026-09-05T17:58:57.586975+00:00"
+  },
+  "icims|nakupuna": {
+    "ats": "icims",
+    "slug": "nakupuna",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:19.825717+00:00"
+  },
+  "icims|blackhawknetwork": {
+    "ats": "icims",
+    "slug": "blackhawknetwork",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:19.936080+00:00"
+  },
+  "careerpuck|dayone-staffing": {
+    "ats": "careerpuck",
+    "slug": "dayone-staffing",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:20.075940+00:00"
+  },
+  "careerpuck|pearl-dental-associates": {
+    "ats": "careerpuck",
+    "slug": "pearl-dental-associates",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:20.113265+00:00"
+  },
+  "eightfold|paypal": {
+    "ats": "eightfold",
+    "slug": "paypal",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:20.225603+00:00"
+  },
+  "icims|sscgp": {
+    "ats": "icims",
+    "slug": "sscgp",
+    "attempts": 2,
+    "first_seen": "2026-09-05T20:15:20.284728+00:00"
+  },
+  "icims|rovisys": {
+    "ats": "icims",
+    "slug": "rovisys",
+    "attempts": 1,
+    "first_seen": "2026-09-05T23:36:33.262340+00:00"
+  },
+  "eightfold|eaton": {
+    "ats": "eightfold",
+    "slug": "eaton",
+    "attempts": 1,
+    "first_seen": "2026-09-05T23:36:33.684131+00:00"
+  },
+  "icims|friedkin": {
+    "ats": "icims",
+    "slug": "friedkin",
+    "attempts": 2,
+    "first_seen": "2026-09-12T21:58:58.388428+00:00"
+  },
+  "icims|aluminumdynamics": {
+    "ats": "icims",
+    "slug": "aluminumdynamics",
+    "attempts": 2,
+    "first_seen": "2026-09-12T21:58:58.397610+00:00"
+  },
+  "icims|careersenus-itt-inc": {
+    "ats": "icims",
+    "slug": "careersenus-itt-inc",
+    "attempts": 2,
+    "first_seen": "2026-09-12T21:58:58.527724+00:00"
+  },
+  "icims|federatedinsurance": {
+    "ats": "icims",
+    "slug": "federatedinsurance",
+    "attempts": 2,
+    "first_seen": "2026-09-12T21:58:58.698574+00:00"
+  },
+  "icims|external-careers-friedkin": {
+    "ats": "icims",
+    "slug": "external-careers-friedkin",
+    "attempts": 2,
+    "first_seen": "2026-09-12T21:58:58.796861+00:00"
+  },
+  "icims|canada-secure": {
+    "ats": "icims",
+    "slug": "canada-secure",
+    "attempts": 1,
+    "first_seen": "2026-09-12T23:55:42.992128+00:00"
+  },
+  "lever|nomagic": {
+    "ats": "lever",
+    "slug": "nomagic",
+    "attempts": 1,
+    "first_seen": "2026-09-16T16:21:25.529579+00:00"
+  },
+  "icims|careers-cfins": {
+    "ats": "icims",
+    "slug": "careers-cfins",
+    "attempts": 3,
+    "first_seen": "2026-09-19T02:54:40.748133+00:00"
+  },
+  "icims|cfins": {
+    "ats": "icims",
+    "slug": "cfins",
+    "attempts": 3,
+    "first_seen": "2026-09-19T02:54:41.903577+00:00"
+  },
+  "icims|tighebond": {
+    "ats": "icims",
+    "slug": "tighebond",
+    "attempts": 4,
+    "first_seen": "2026-09-19T10:05:20.569761+00:00"
+  },
+  "icims|gdeb": {
+    "ats": "icims",
+    "slug": "gdeb",
+    "attempts": 3,
+    "first_seen": "2026-09-19T15:32:53.456204+00:00"
+  },
+  "icims|homeoffice-na-urbn": {
+    "ats": "icims",
+    "slug": "homeoffice-na-urbn",
+    "attempts": 3,
+    "first_seen": "2026-09-19T15:32:53.886381+00:00"
+  },
+  "icims|us-erac": {
+    "ats": "icims",
+    "slug": "us-erac",
+    "attempts": 3,
+    "first_seen": "2026-09-19T15:32:53.895087+00:00"
+  },
+  "careerpuck|rails": {
+    "ats": "careerpuck",
+    "slug": "rails",
+    "attempts": 2,
+    "first_seen": "2026-09-19T18:28:01.361064+00:00"
+  },
+  "icims|externalhourly-highgate": {
+    "ats": "icims",
+    "slug": "externalhourly-highgate",
+    "attempts": 2,
+    "first_seen": "2026-09-19T18:28:02.847579+00:00"
+  },
+  "icims|careers-lmi": {
+    "ats": "icims",
+    "slug": "careers-lmi",
+    "attempts": 2,
+    "first_seen": "2026-09-22T16:30:29.998068+00:00"
+  },
+  "lever|beam": {
+    "ats": "lever",
+    "slug": "beam",
+    "attempts": 2,
+    "first_seen": "2026-09-24T00:17:20.360432+00:00"
+  },
+  "icims|globalcareers-atlassian": {
+    "ats": "icims",
+    "slug": "globalcareers-atlassian",
+    "attempts": 3,
+    "first_seen": "2026-09-24T02:55:05.380970+00:00"
+  },
+  "lever|xpansiv": {
+    "ats": "lever",
+    "slug": "xpansiv",
+    "attempts": 2,
+    "first_seen": "2026-09-25T10:56:17.189716+00:00"
+  },
+  "icims|barrios": {
+    "ats": "icims",
+    "slug": "barrios",
+    "attempts": 4,
+    "first_seen": "2026-09-25T16:47:14.365150+00:00"
+  },
+  "icims|careers-barrios": {
+    "ats": "icims",
+    "slug": "careers-barrios",
+    "attempts": 4,
+    "first_seen": "2026-09-25T16:47:15.360423+00:00"
+  },
+  "icims|careers-canada-secure": {
+    "ats": "icims",
+    "slug": "careers-canada-secure",
+    "attempts": 2,
+    "first_seen": "2026-09-26T00:24:50.705848+00:00"
+  },
+  "icims|growfinancial": {
+    "ats": "icims",
+    "slug": "growfinancial",
+    "attempts": 2,
+    "first_seen": "2026-09-26T19:10:43.581107+00:00"
+  },
+  "icims|cadmusgroup": {
+    "ats": "icims",
+    "slug": "cadmusgroup",
+    "attempts": 1,
+    "first_seen": "2026-09-26T22:28:00.640066+00:00"
+  },
+  "icims|goldbeltapex": {
+    "ats": "icims",
+    "slug": "goldbeltapex",
+    "attempts": 1,
+    "first_seen": "2026-09-26T22:28:00.857115+00:00"
+  },
+  "icims|thesilverlining": {
+    "ats": "icims",
+    "slug": "thesilverlining",
+    "attempts": 1,
+    "first_seen": "2026-09-26T22:28:01.186658+00:00"
+  },
+  "icims|campus-americas": {
+    "ats": "icims",
+    "slug": "campus-americas",
+    "attempts": 1,
+    "first_seen": "2026-09-26T22:28:01.201528+00:00"
+  },
+  "icims|careers-cadmusgroup": {
+    "ats": "icims",
+    "slug": "careers-cadmusgroup",
+    "attempts": 3,
+    "first_seen": "2026-09-30T03:45:05.447635+00:00"
+  },
+  "icims|careers-wipfli": {
+    "ats": "icims",
+    "slug": "careers-wipfli",
+    "attempts": 3,
+    "first_seen": "2026-10-03T03:34:01.771719+00:00"
+  },
+  "icims|hrblock": {
+    "ats": "icims",
+    "slug": "hrblock",
+    "attempts": 4,
+    "first_seen": "2026-10-03T10:55:35.655691+00:00"
+  },
+  "icims|staff-emory": {
+    "ats": "icims",
+    "slug": "staff-emory",
+    "attempts": 1,
+    "first_seen": "2026-10-03T15:53:39.965819+00:00"
+  },
+  "icims|campus-us-corgan": {
+    "ats": "icims",
+    "slug": "campus-us-corgan",
+    "attempts": 1,
+    "first_seen": "2026-10-03T22:44:14.323732+00:00"
+  },
+  "icims|sas": {
+    "ats": "icims",
+    "slug": "sas",
+    "attempts": 1,
+    "first_seen": "2026-10-03T22:44:14.430962+00:00"
+  },
+  "greenhouse|nextdoorcampus": {
+    "ats": "greenhouse",
+    "slug": "nextdoorcampus",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:56.332740+00:00"
+  },
+  "icims|careers-spscommerce": {
+    "ats": "icims",
+    "slug": "careers-spscommerce",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:56.702617+00:00"
+  },
+  "lever|stubhubholdings": {
+    "ats": "lever",
+    "slug": "stubhubholdings",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:56.730323+00:00"
+  },
+  "icims|careers-nakupuna": {
+    "ats": "icims",
+    "slug": "careers-nakupuna",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:56.743917+00:00"
+  },
+  "icims|idemia": {
+    "ats": "icims",
+    "slug": "idemia",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:56.798070+00:00"
+  },
+  "icims|careers-springswindowfashions": {
+    "ats": "icims",
+    "slug": "careers-springswindowfashions",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.084553+00:00"
+  },
+  "icims|spscommerce": {
+    "ats": "icims",
+    "slug": "spscommerce",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.123586+00:00"
+  },
+  "icims|careers-sscgp": {
+    "ats": "icims",
+    "slug": "careers-sscgp",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.263044+00:00"
+  },
+  "workable|vontive": {
+    "ats": "workable",
+    "slug": "vontive",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.355882+00:00"
+  },
+  "lever|goforward": {
+    "ats": "lever",
+    "slug": "goforward",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.363597+00:00"
+  },
+  "icims|careers-empiricalfoods": {
+    "ats": "icims",
+    "slug": "careers-empiricalfoods",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.439162+00:00"
+  },
+  "icims|careers-blackhawknetwork": {
+    "ats": "icims",
+    "slug": "careers-blackhawknetwork",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.465748+00:00"
+  },
+  "icims|uscareers-idemia": {
+    "ats": "icims",
+    "slug": "uscareers-idemia",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.480639+00:00"
+  },
+  "greenhouse|nightfall": {
+    "ats": "greenhouse",
+    "slug": "nightfall",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.503942+00:00"
+  },
+  "lever|persona": {
+    "ats": "lever",
+    "slug": "persona",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.547516+00:00"
+  },
+  "greenhouse|minware": {
+    "ats": "greenhouse",
+    "slug": "minware",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.603881+00:00"
+  },
+  "greenhouse|qumulo": {
+    "ats": "greenhouse",
+    "slug": "qumulo",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.650704+00:00"
+  },
+  "jobvite|src-inc": {
+    "ats": "jobvite",
+    "slug": "src-inc",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.673870+00:00"
+  },
+  "icims|americas-cookmedical": {
+    "ats": "icims",
+    "slug": "americas-cookmedical",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.730257+00:00"
+  },
+  "icims|careers-iridium": {
+    "ats": "icims",
+    "slug": "careers-iridium",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.758944+00:00"
+  },
+  "greenhouse|chalkinc": {
+    "ats": "greenhouse",
+    "slug": "chalkinc",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.785992+00:00"
+  },
+  "lever|kikoff": {
+    "ats": "lever",
+    "slug": "kikoff",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.805287+00:00"
+  },
+  "greenhouse|alchemy": {
+    "ats": "greenhouse",
+    "slug": "alchemy",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:57.842071+00:00"
+  },
+  "lever|x1creditcard": {
+    "ats": "lever",
+    "slug": "x1creditcard",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:05:58.044009+00:00"
+  },
+  "lever|wolve": {
+    "ats": "lever",
+    "slug": "wolve",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:06:00.989835+00:00"
+  },
+  "lever|voleon": {
+    "ats": "lever",
+    "slug": "voleon",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:06:01.283689+00:00"
+  },
+  "lever|fluence": {
+    "ats": "lever",
+    "slug": "fluence",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:06:03.420854+00:00"
+  },
+  "lever|kensho": {
+    "ats": "lever",
+    "slug": "kensho",
+    "attempts": 4,
+    "first_seen": "2026-10-09T18:06:04.100995+00:00"
+  },
+  "icims|careers-gdeb": {
+    "ats": "icims",
+    "slug": "careers-gdeb",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:03.510244+00:00"
+  },
+  "icims|careers-sas": {
+    "ats": "icims",
+    "slug": "careers-sas",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:03.556478+00:00"
+  },
+  "icims|careers-peraton": {
+    "ats": "icims",
+    "slug": "careers-peraton",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:03.732124+00:00"
+  },
+  "icims|careers-rovisys": {
+    "ats": "icims",
+    "slug": "careers-rovisys",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:04.204995+00:00"
+  },
+  "icims|careerscoopinternen-fgfbrands": {
+    "ats": "icims",
+    "slug": "careerscoopinternen-fgfbrands",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:04.264240+00:00"
+  },
+  "icims|internal-marzetti": {
+    "ats": "icims",
+    "slug": "internal-marzetti",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:04.805564+00:00"
+  },
+  "icims|ideas-sas": {
+    "ats": "icims",
+    "slug": "ideas-sas",
+    "attempts": 3,
+    "first_seen": "2026-10-09T23:52:04.827033+00:00"
+  },
+  "greenhouse|acrisureinnovation": {
+    "ats": "greenhouse",
+    "slug": "acrisureinnovation",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:02.803224+00:00"
+  },
+  "icims|careers-growfinancial": {
+    "ats": "icims",
+    "slug": "careers-growfinancial",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:02.913596+00:00"
+  },
+  "icims|careers-aluminumdynamics": {
+    "ats": "icims",
+    "slug": "careers-aluminumdynamics",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.019305+00:00"
+  },
+  "icims|simventions": {
+    "ats": "icims",
+    "slug": "simventions",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.058405+00:00"
+  },
+  "icims|careers-simventions": {
+    "ats": "icims",
+    "slug": "careers-simventions",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.186220+00:00"
+  },
+  "icims|careers-daytonfreight": {
+    "ats": "icims",
+    "slug": "careers-daytonfreight",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.296214+00:00"
+  },
+  "icims|careers-hexagonpositioning": {
+    "ats": "icims",
+    "slug": "careers-hexagonpositioning",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.352202+00:00"
+  },
+  "icims|careers-riversideresearch": {
+    "ats": "icims",
+    "slug": "careers-riversideresearch",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.557225+00:00"
+  },
+  "icims|daytonfreight": {
+    "ats": "icims",
+    "slug": "daytonfreight",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.727473+00:00"
+  },
+  "lever|webfx": {
+    "ats": "lever",
+    "slug": "webfx",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:03.851798+00:00"
+  },
+  "icims|careers-federatedinsurance": {
+    "ats": "icims",
+    "slug": "careers-federatedinsurance",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:04.140667+00:00"
+  },
+  "icims|campus-libertymutual": {
+    "ats": "icims",
+    "slug": "campus-libertymutual",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:04.146535+00:00"
+  },
+  "icims|careers-ftidefense": {
+    "ats": "icims",
+    "slug": "careers-ftidefense",
+    "attempts": 2,
+    "first_seen": "2026-10-10T04:05:04.155524+00:00"
+  },
+  "icims|careers-hrblock": {
+    "ats": "icims",
+    "slug": "careers-hrblock",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:32.803430+00:00"
+  },
+  "icims|careers-sentinel": {
+    "ats": "icims",
+    "slug": "careers-sentinel",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:32.822506+00:00"
+  },
+  "icims|careers-amtrustgroup": {
+    "ats": "icims",
+    "slug": "careers-amtrustgroup",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:32.847690+00:00"
+  },
+  "icims|careers-heart": {
+    "ats": "icims",
+    "slug": "careers-heart",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:32.891137+00:00"
+  },
+  "workable|wallapop": {
+    "ats": "workable",
+    "slug": "wallapop",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:32.897452+00:00"
+  },
+  "icims|careers-apogeeusa": {
+    "ats": "icims",
+    "slug": "careers-apogeeusa",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.082012+00:00"
+  },
+  "icims|sentinel": {
+    "ats": "icims",
+    "slug": "sentinel",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.094769+00:00"
+  },
+  "icims|careers-goldbeltapex": {
+    "ats": "icims",
+    "slug": "careers-goldbeltapex",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.245229+00:00"
+  },
+  "workable|broadlume": {
+    "ats": "workable",
+    "slug": "broadlume",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.331371+00:00"
+  },
+  "icims|amtrustgroup": {
+    "ats": "icims",
+    "slug": "amtrustgroup",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.424467+00:00"
+  },
+  "lever|bdg": {
+    "ats": "lever",
+    "slug": "bdg",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.424479+00:00"
+  },
+  "icims|uscareeropenings-alliancelaundry": {
+    "ats": "icims",
+    "slug": "uscareeropenings-alliancelaundry",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.431467+00:00"
+  },
+  "icims|careers-steeldynamics": {
+    "ats": "icims",
+    "slug": "careers-steeldynamics",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.550405+00:00"
+  },
+  "icims|careers-americansystems": {
+    "ats": "icims",
+    "slug": "careers-americansystems",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.618092+00:00"
+  },
+  "workable|mytutor": {
+    "ats": "workable",
+    "slug": "mytutor",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.658096+00:00"
+  },
+  "workable|patients": {
+    "ats": "workable",
+    "slug": "patients",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.695180+00:00"
+  },
+  "workable|avantstay": {
+    "ats": "workable",
+    "slug": "avantstay",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.794086+00:00"
+  },
+  "icims|heart": {
+    "ats": "icims",
+    "slug": "heart",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:33.837336+00:00"
+  },
+  "lever|meetalbert": {
+    "ats": "lever",
+    "slug": "meetalbert",
+    "attempts": 1,
+    "first_seen": "2026-10-10T11:42:39.490263+00:00"
+  }
+}
